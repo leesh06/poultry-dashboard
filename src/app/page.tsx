@@ -14,7 +14,7 @@ import {
   Activity,
 } from 'lucide-react'
 import { formatNumber, formatCurrency } from '@/lib/utils/number'
-import { PRICE_COLORS, PRICE_LABELS } from '@/types/price'
+import { PRICE_COLORS } from '@/types/price'
 import { STAT_COLORS } from '@/types/statistics'
 import {
   LineChart,
@@ -110,7 +110,7 @@ function getDiff(current: number, prev: number) {
   return { value: 0, direction: 'flat' as const }
 }
 
-function DiffBadge({ current, prev }: { current: number; prev: number }) {
+function DiffBadge({ current, prev, size = 'md' }: { current: number; prev: number; size?: 'md' | 'lg' }) {
   const { value, direction } = getDiff(current, prev)
   const color = direction === 'up'
     ? 'var(--danger)'
@@ -118,18 +118,24 @@ function DiffBadge({ current, prev }: { current: number; prev: number }) {
       ? '#4A90D9'
       : 'var(--muted)'
 
-  const Icon = direction === 'up' ? TrendingUp : direction === 'down' ? TrendingDown : Minus
+  const isLg = size === 'lg'
+  const iconSize = isLg ? 14 : 12
+  const textClass = isLg
+    ? 'text-sm font-bold'
+    : 'text-xs font-semibold'
 
   return (
     <span
-      className="inline-flex items-center gap-0.5 rounded-lg px-1.5 py-0.5 text-xs font-semibold tabular-nums"
+      className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 ${textClass} tabular-nums`}
       style={{
         color,
         background: `color-mix(in srgb, ${color} 10%, transparent)`,
       }}
     >
-      <Icon size={11} />
-      {value > 0 ? formatNumber(value) : '-'}
+      {direction === 'up' && <TrendingUp size={iconSize} />}
+      {direction === 'down' && <TrendingDown size={iconSize} />}
+      {direction === 'flat' && <Minus size={iconSize} />}
+      {value > 0 ? formatNumber(value) : '보합'}
     </span>
   )
 }
@@ -266,45 +272,45 @@ export default function DashboardPage() {
         <Card className="animate-fade-in-up stagger-1 !p-0 overflow-hidden" padding="sm">
           {/* 카드 헤더 띠 */}
           <div
-            className="px-4 py-2.5 flex items-center justify-between"
+            className="px-4 py-3 flex items-center justify-between"
             style={{
               background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
             }}
           >
-            <span className="text-xs font-bold tracking-wider text-white/90 uppercase">
+            <span className="text-sm font-bold tracking-wider text-white/90 uppercase">
               육계 생계시세
             </span>
             {latestPrice && (
-              <span className="text-[10px] font-medium text-white/60">
+              <span className="text-xs font-medium text-white/60">
                 {latestPrice.date} 기준
               </span>
             )}
           </div>
 
           {/* 육계 3종 대형 표시 */}
-          <div className="p-4">
-            <div className="grid grid-cols-3 gap-3">
+          <div className="px-3 py-5 sm:px-5 sm:py-6">
+            <div className="grid grid-cols-3 gap-2">
               {HERO_ITEMS.map(({ key, label }) => {
                 const value = latestPrice?.[key] ?? 0
                 const prev = prevPrice?.[key] ?? value
                 return (
                   <div key={key} className="text-center">
-                    <div className="flex items-center justify-center gap-1 mb-1.5">
+                    <div className="flex items-center justify-center gap-1.5 mb-2">
                       <div
-                        className="h-2.5 w-2.5 rounded-full"
+                        className="h-3 w-3 rounded-full"
                         style={{ background: PRICE_COLORS[key] }}
                       />
-                      <span className="text-[11px] font-semibold" style={{ color: 'var(--muted)' }}>
+                      <span className="text-sm font-bold" style={{ color: 'var(--muted)' }}>
                         {label}
                       </span>
                     </div>
                     <p
-                      className="text-xl font-extrabold tabular-nums leading-none sm:text-2xl"
+                      className="text-2xl font-extrabold tabular-nums leading-none sm:text-3xl"
                       style={{ color: 'var(--foreground)' }}
                     >
                       {formatNumber(value)}
                     </p>
-                    <p className="text-[10px] mt-0.5 mb-1.5" style={{ color: 'var(--muted)' }}>
+                    <p className="text-xs mt-1 mb-2 font-medium" style={{ color: 'var(--muted)' }}>
                       원/kg
                     </p>
                     <DiffBadge current={value} prev={prev} />
@@ -324,98 +330,41 @@ export default function DashboardPage() {
               <Card
                 key={key}
                 className={`animate-fade-in-up stagger-${i + 2}`}
+                padding="lg"
               >
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2.5 mb-3">
                   <div
-                    className="h-8 w-8 rounded-xl flex items-center justify-center"
+                    className="h-9 w-9 rounded-xl flex items-center justify-center"
                     style={{
                       background: `color-mix(in srgb, ${PRICE_COLORS[key]} 14%, transparent)`,
                     }}
                   >
                     <div
-                      className="h-3 w-3 rounded-full"
+                      className="h-3.5 w-3.5 rounded-full"
                       style={{ background: PRICE_COLORS[key] }}
                     />
                   </div>
-                  <span className="text-xs font-semibold" style={{ color: 'var(--muted)' }}>
+                  <span className="text-sm font-bold" style={{ color: 'var(--muted)' }}>
                     {label}
                   </span>
                 </div>
                 <p
-                  className="text-2xl font-extrabold tabular-nums leading-none sm:text-3xl"
+                  className="text-3xl font-extrabold tabular-nums leading-none sm:text-4xl"
                   style={{ color: 'var(--foreground)' }}
                 >
                   {formatNumber(value)}
                 </p>
-                <p className="text-[10px] mt-0.5 mb-2" style={{ color: 'var(--muted)' }}>
+                <p className="text-xs mt-1 mb-3 font-medium" style={{ color: 'var(--muted)' }}>
                   {PRICE_UNITS[key]}
                 </p>
-                <DiffBadge current={value} prev={prev} />
+                <DiffBadge current={value} prev={prev} size="lg" />
               </Card>
             )
           })}
         </div>
 
-        {/* ═══ 전체 시세 요약 테이블 ═══ */}
-        {latestPrice && prevPrice && (
-          <Card className="animate-fade-in-up stagger-3" padding="sm">
-            <div className="px-1 pt-1 pb-2">
-              <h3 className="text-xs font-bold mb-3" style={{ color: 'var(--muted)' }}>
-                시세 비교
-              </h3>
-              <div className="space-y-1.5">
-                {([...HERO_ITEMS, ...SUB_ITEMS]).map(({ key, label }) => {
-                  const current = latestPrice[key]
-                  const prev = prevPrice[key]
-                  const { value: diffVal, direction } = getDiff(current, prev)
-                  const diffColor = direction === 'up'
-                    ? 'var(--danger)'
-                    : direction === 'down'
-                      ? '#4A90D9'
-                      : 'var(--muted)'
-
-                  return (
-                    <div
-                      key={key}
-                      className="flex items-center justify-between rounded-xl px-3 py-2.5"
-                      style={{ background: 'var(--surface-alt)' }}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="h-2 w-2 rounded-full"
-                          style={{ background: PRICE_COLORS[key] }}
-                        />
-                        <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
-                          {label}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span
-                          className="text-sm font-bold tabular-nums"
-                          style={{ color: 'var(--foreground)' }}
-                        >
-                          {formatCurrency(current)}
-                        </span>
-                        <span
-                          className="text-xs font-semibold tabular-nums min-w-[52px] text-right"
-                          style={{ color: diffColor }}
-                        >
-                          {direction === 'up' && '▲'}
-                          {direction === 'down' && '▼'}
-                          {direction === 'flat' && '-'}
-                          {diffVal > 0 ? ` ${formatNumber(diffVal)}` : ''}
-                        </span>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </Card>
-        )}
-
         {/* ═══ 육계 시세 추이 차트 ═══ */}
-        <Card className="animate-fade-in-up stagger-4" padding="lg">
+        <Card className="animate-fade-in-up stagger-3" padding="lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
@@ -466,7 +415,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* ═══ 병아리 + 종계노계 시세 추이 차트 ═══ */}
-        <Card className="animate-fade-in-up stagger-5" padding="lg">
+        <Card className="animate-fade-in-up stagger-4" padding="lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
@@ -508,7 +457,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* ═══ 종계입식현황 차트 ═══ */}
-        <Card className="animate-fade-in-up stagger-6" padding="lg">
+        <Card className="animate-fade-in-up stagger-5" padding="lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
