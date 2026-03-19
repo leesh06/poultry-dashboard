@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Header } from '@/components/layout/Header'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Card } from '@/components/ui/Card'
@@ -15,7 +15,7 @@ import {
   ChevronUp,
 } from 'lucide-react'
 import { formatNumber, formatPercent, calcRate } from '@/lib/utils/number'
-import type { Session, BuildingNumber } from '@/types/production'
+import type { Session, BuildingNumber, DailyProductionSummary } from '@/types/production'
 import { SESSION_LABELS, BUILDING_LABELS } from '@/types/production'
 
 const BUILDINGS: BuildingNumber[] = [1, 2, 3]
@@ -46,6 +46,36 @@ export default function ProductionPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [history, setHistory] = useState<DailyProductionSummary[]>([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [historyError, setHistoryError] = useState('')
+
+  const fetchHistory = useCallback(async () => {
+    setHistoryLoading(true)
+    setHistoryError('')
+    try {
+      const res = await fetch('/api/production')
+      const json = await res.json()
+      if (json.success && json.data) {
+        const sorted = (json.data as DailyProductionSummary[])
+          .sort((a, b) => b.date.localeCompare(a.date))
+          .slice(0, 10)
+        setHistory(sorted)
+      } else {
+        setHistoryError(json.error || '데이터를 불러올 수 없습니다')
+      }
+    } catch {
+      setHistoryError('네트워크 오류가 발생했습니다')
+    } finally {
+      setHistoryLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (showHistory && history.length === 0 && !historyLoading) {
+      fetchHistory()
+    }
+  }, [showHistory, history.length, historyLoading, fetchHistory])
 
   const updateBuilding = useCallback((building: BuildingNumber, field: keyof BuildingInput, value: string) => {
     setBuildings(prev => ({
@@ -82,6 +112,7 @@ export default function ProductionPage() {
       if (res.ok) {
         setSaved(true)
         setTimeout(() => setSaved(false), 3000)
+        if (showHistory) fetchHistory()
       } else {
         const errorData = await res.json().catch(() => ({ error: '저장에 실패했습니다' }))
         alert(errorData.error || '저장에 실패했습니다')
@@ -313,11 +344,90 @@ export default function ProductionPage() {
 
         {showHistory && (
           <Card className="animate-slide-up">
-            <div className="text-center py-8">
-              <p className="text-sm" style={{ color: 'var(--muted)' }}>
-                Google Sheets 연동 후 최근 기록이 표시됩니다
-              </p>
-            </div>
+            {historyLoading ? (
+              <div className="text-center py-8">
+                <p className="text-sm" style={{ color: 'var(--muted)' }}>불러오는 중...</p>
+              </div>
+            ) : historyError ? (
+              <div className="text-center py-8">
+                <p className="text-sm" style={{ color: 'var(--accent)' }}>{historyError}</p>
+                <button
+                  onClick={fetchHistory}
+                  className="mt-2 text-xs font-medium underline"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  다시 시도
+                </button>
+              </div>
+            ) : history.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-sm" style={{ color: 'var(--muted)' }}>
+                  저장된 기록이 없습니다
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <h4 className="text-xs font-semibold" style={{ color: 'var(--muted)' }}>
+                  최근 기록 (최대 10건)
+                </h4>
+                {history.map((day) => {
+                  const dateLabel = new Date(day.date + 'T00:00:00').toLocaleDateString('ko-KR', {
+                    month: 'short',
+                    day: 'numeric',
+                    weekday: 'short',
+                  })
+                  return (
+                    <div
+                      key={day.date}
+                      className="rounded-xl px-3 py-2.5"
+                      style={{ background: 'var(--surface-alt)' }}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
+                          {dateLabel}
+                        </span>
+                        <div className="flex items-center gap-3 text-xs font-bold tabular-nums">
+                          <span style={{ color: 'var(--primary)' }}>
+                            {formatNumber(day.totalCount)}개
+                          </span>
+                          <span style={{ color: 'var(--accent)' }}>
+                            파란 {formatNumber(day.totalBroken)}개
+                          </span>
+                          <span style={{ color: 'var(--muted)' }}>
+                            ({formatPercent(day.brokenRate)})
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        {day.buildings.map((b) => {
+                          const total = b.morning.count + b.afternoon.count
+                          return (
+                            <div
+                              key={b.building}
+                              className="flex-1 rounded-lg px-2 py-1 text-center"
+                              style={{
+                                background: 'var(--surface)',
+                                border: `1px solid ${BUILDING_COLORS[b.building]}20`,
+                              }}
+                            >
+                              <span
+                                className="text-[10px] font-bold"
+                                style={{ color: BUILDING_COLORS[b.building] }}
+                              >
+                                {b.building}동
+                              </span>
+                              <p className="text-xs font-semibold tabular-nums" style={{ color: 'var(--foreground)' }}>
+                                {formatNumber(total)}
+                              </p>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </Card>
         )}
       </PageContainer>

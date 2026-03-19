@@ -3,18 +3,18 @@
 import { useState, useEffect } from 'react'
 import { Header } from '@/components/layout/Header'
 import { PageContainer } from '@/components/layout/PageContainer'
-import { Card, CardHeader } from '@/components/ui/Card'
+import { Card } from '@/components/ui/Card'
 import { ChartTooltip } from '@/components/ui/ChartTooltip'
 import {
-  Egg,
   TrendingUp,
   TrendingDown,
+  Minus,
   BarChart3,
   AlertTriangle,
-  RefreshCw,
+  Activity,
 } from 'lucide-react'
-import { formatNumber, formatCurrency, formatPercent } from '@/lib/utils/number'
-import { PRICE_COLORS } from '@/types/price'
+import { formatNumber, formatCurrency } from '@/lib/utils/number'
+import { PRICE_COLORS, PRICE_LABELS } from '@/types/price'
 import { STAT_COLORS } from '@/types/statistics'
 import {
   LineChart,
@@ -24,29 +24,27 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Area,
   AreaChart,
+  Area,
 } from 'recharts'
 
-/* ─── Demo data (API 미연결시 표시) ─── */
-const DEMO_PRODUCTION = [
-  { date: '03/12', total: 2850, broken: 45 },
-  { date: '03/13', total: 2920, broken: 38 },
-  { date: '03/14', total: 2780, broken: 52 },
-  { date: '03/15', total: 2910, broken: 41 },
-  { date: '03/16', total: 2860, broken: 47 },
-  { date: '03/17', total: 2940, broken: 35 },
-  { date: '03/18', total: 2890, broken: 43 },
-]
-
+/* ─── 데모 데이터 (API 미연결시 표시) ─── */
 const DEMO_PRICES = [
-  { date: '03/07', broilerLarge: 2690, broilerMedium: 2790, broilerSmall: 2890, chick: 900 },
-  { date: '03/09', broilerLarge: 2790, broilerMedium: 2890, broilerSmall: 2990, chick: 900 },
-  { date: '03/11', broilerLarge: 2750, broilerMedium: 2850, broilerSmall: 2950, chick: 910 },
-  { date: '03/13', broilerLarge: 2830, broilerMedium: 2930, broilerSmall: 3030, chick: 905 },
-  { date: '03/15', broilerLarge: 2780, broilerMedium: 2880, broilerSmall: 2980, chick: 915 },
-  { date: '03/17', broilerLarge: 2810, broilerMedium: 2910, broilerSmall: 3010, chick: 910 },
-  { date: '03/18', broilerLarge: 2800, broilerMedium: 2900, broilerSmall: 3000, chick: 905 },
+  { date: '03/04', broilerLarge: 2650, broilerMedium: 2750, broilerSmall: 2850, chick: 890, breedingHen: 590 },
+  { date: '03/05', broilerLarge: 2690, broilerMedium: 2790, broilerSmall: 2890, chick: 900, breedingHen: 590 },
+  { date: '03/06', broilerLarge: 2720, broilerMedium: 2820, broilerSmall: 2920, chick: 895, breedingHen: 595 },
+  { date: '03/07', broilerLarge: 2690, broilerMedium: 2790, broilerSmall: 2890, chick: 900, breedingHen: 590 },
+  { date: '03/08', broilerLarge: 2750, broilerMedium: 2850, broilerSmall: 2950, chick: 905, breedingHen: 600 },
+  { date: '03/09', broilerLarge: 2790, broilerMedium: 2890, broilerSmall: 2990, chick: 900, breedingHen: 600 },
+  { date: '03/10', broilerLarge: 2780, broilerMedium: 2880, broilerSmall: 2980, chick: 910, breedingHen: 605 },
+  { date: '03/11', broilerLarge: 2750, broilerMedium: 2850, broilerSmall: 2950, chick: 910, breedingHen: 605 },
+  { date: '03/12', broilerLarge: 2800, broilerMedium: 2900, broilerSmall: 3000, chick: 905, breedingHen: 610 },
+  { date: '03/13', broilerLarge: 2830, broilerMedium: 2930, broilerSmall: 3030, chick: 905, breedingHen: 610 },
+  { date: '03/14', broilerLarge: 2810, broilerMedium: 2910, broilerSmall: 3010, chick: 910, breedingHen: 615 },
+  { date: '03/15', broilerLarge: 2780, broilerMedium: 2880, broilerSmall: 2980, chick: 915, breedingHen: 610 },
+  { date: '03/16', broilerLarge: 2810, broilerMedium: 2910, broilerSmall: 3010, chick: 910, breedingHen: 615 },
+  { date: '03/17', broilerLarge: 2820, broilerMedium: 2920, broilerSmall: 3020, chick: 912, breedingHen: 618 },
+  { date: '03/18', broilerLarge: 2800, broilerMedium: 2900, broilerSmall: 3000, chick: 905, breedingHen: 615 },
 ]
 
 const DEMO_STATISTICS = [
@@ -64,30 +62,85 @@ const DEMO_STATISTICS = [
   { month: '12월', '2026': null, '2025': 460, '2024': 495, '2023': 488, '2022': 510 },
 ]
 
-const STAT_YEARS = ['2026', '2025', '2024', '2023', '2022']
+const STAT_YEARS_DEFAULT = ['2026', '2025', '2024', '2023', '2022']
+
+type PriceKey = 'broilerLarge' | 'broilerMedium' | 'broilerSmall' | 'chick' | 'breedingHen'
+
+interface PriceItem {
+  date: string
+  broilerLarge: number
+  broilerMedium: number
+  broilerSmall: number
+  chick: number
+  breedingHen: number
+}
 
 interface DashboardData {
-  todayProduction: number
-  todayBroken: number
-  brokenRate: number
-  productionTrend: typeof DEMO_PRODUCTION
-  prices: typeof DEMO_PRICES
-  latestPrice: typeof DEMO_PRICES[0] | null
+  prices: PriceItem[]
+  latestPrice: PriceItem | null
+  prevPrice: PriceItem | null
   statistics: typeof DEMO_STATISTICS
   statYears: string[]
   isDemo: boolean
 }
 
+const PRICE_UNITS: Record<PriceKey, string> = {
+  broilerLarge: '원/kg',
+  broilerMedium: '원/kg',
+  broilerSmall: '원/kg',
+  chick: '원/수',
+  breedingHen: '원/kg',
+}
+
+const HERO_ITEMS: { key: PriceKey; label: string }[] = [
+  { key: 'broilerLarge', label: '육계(대)' },
+  { key: 'broilerMedium', label: '육계(중)' },
+  { key: 'broilerSmall', label: '육계(소)' },
+]
+
+const SUB_ITEMS: { key: PriceKey; label: string }[] = [
+  { key: 'chick', label: '병아리' },
+  { key: 'breedingHen', label: '종계노계' },
+]
+
+function getDiff(current: number, prev: number) {
+  const diff = current - prev
+  if (diff > 0) return { value: diff, direction: 'up' as const }
+  if (diff < 0) return { value: Math.abs(diff), direction: 'down' as const }
+  return { value: 0, direction: 'flat' as const }
+}
+
+function DiffBadge({ current, prev }: { current: number; prev: number }) {
+  const { value, direction } = getDiff(current, prev)
+  const color = direction === 'up'
+    ? 'var(--danger)'
+    : direction === 'down'
+      ? '#4A90D9'
+      : 'var(--muted)'
+
+  const Icon = direction === 'up' ? TrendingUp : direction === 'down' ? TrendingDown : Minus
+
+  return (
+    <span
+      className="inline-flex items-center gap-0.5 rounded-lg px-1.5 py-0.5 text-xs font-semibold tabular-nums"
+      style={{
+        color,
+        background: `color-mix(in srgb, ${color} 10%, transparent)`,
+      }}
+    >
+      <Icon size={11} />
+      {value > 0 ? formatNumber(value) : '-'}
+    </span>
+  )
+}
+
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData>({
-    todayProduction: 2890,
-    todayBroken: 43,
-    brokenRate: 1.5,
-    productionTrend: DEMO_PRODUCTION,
     prices: DEMO_PRICES,
     latestPrice: DEMO_PRICES[DEMO_PRICES.length - 1],
+    prevPrice: DEMO_PRICES[DEMO_PRICES.length - 2],
     statistics: DEMO_STATISTICS,
-    statYears: STAT_YEARS,
+    statYears: STAT_YEARS_DEFAULT,
     isDemo: true,
   })
   const [loading, setLoading] = useState(true)
@@ -95,8 +148,7 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [prodRes, priceRes, statRes] = await Promise.allSettled([
-          fetch('/api/production'),
+        const [priceRes, statRes] = await Promise.allSettled([
           fetch('/api/price'),
           fetch('/api/statistics'),
         ])
@@ -104,48 +156,40 @@ export default function DashboardPage() {
         let isDemo = true
         const updates: Partial<DashboardData> = {}
 
-        // 생산 데이터 반영
-        if (prodRes.status === 'fulfilled' && prodRes.value.ok) {
-          const prodData = await prodRes.value.json()
-          if (prodData.success && prodData.data?.length > 0) {
-            isDemo = false
-            const summaries = prodData.data.slice(0, 7)
-            updates.productionTrend = summaries.map((s: { date: string; totalCount: number; totalBroken: number }) => ({
-              date: s.date.slice(5).replace('-', '/'),
-              total: s.totalCount,
-              broken: s.totalBroken,
-            })).reverse()
-            const today = summaries[0]
-            updates.todayProduction = today.totalCount
-            updates.todayBroken = today.totalBroken
-            updates.brokenRate = today.brokenRate
-          }
-        }
-
-        // 시세 데이터 반영
         if (priceRes.status === 'fulfilled' && priceRes.value.ok) {
           const priceData = await priceRes.value.json()
           if (priceData.success && priceData.data?.length > 0) {
             isDemo = false
-            const prices = priceData.data.slice(0, 15)
-            updates.prices = prices.map((p: { date: string; broilerLarge: number; broilerMedium: number; broilerSmall: number; chick: number }) => ({
+            const sorted = priceData.data.slice(0, 15)
+            updates.prices = sorted.map((p: PriceItem & { date: string }) => ({
               date: p.date.slice(5).replace('-', '/'),
               broilerLarge: p.broilerLarge,
               broilerMedium: p.broilerMedium,
               broilerSmall: p.broilerSmall,
               chick: p.chick,
+              breedingHen: p.breedingHen,
             })).reverse()
             updates.latestPrice = {
-              date: prices[0].date.slice(5).replace('-', '/'),
-              broilerLarge: prices[0].broilerLarge,
-              broilerMedium: prices[0].broilerMedium,
-              broilerSmall: prices[0].broilerSmall,
-              chick: prices[0].chick,
+              date: sorted[0].date.slice(5).replace('-', '/'),
+              broilerLarge: sorted[0].broilerLarge,
+              broilerMedium: sorted[0].broilerMedium,
+              broilerSmall: sorted[0].broilerSmall,
+              chick: sorted[0].chick,
+              breedingHen: sorted[0].breedingHen,
+            }
+            if (sorted.length > 1) {
+              updates.prevPrice = {
+                date: sorted[1].date.slice(5).replace('-', '/'),
+                broilerLarge: sorted[1].broilerLarge,
+                broilerMedium: sorted[1].broilerMedium,
+                broilerSmall: sorted[1].broilerSmall,
+                chick: sorted[1].chick,
+                breedingHen: sorted[1].breedingHen,
+              }
             }
           }
         }
 
-        // 입식현황 데이터 반영
         if (statRes.status === 'fulfilled' && statRes.value.ok) {
           const statData = await statRes.value.json()
           if (statData.success && statData.data?.length > 0) {
@@ -181,11 +225,25 @@ export default function DashboardPage() {
     weekday: 'long',
   })
 
+  const { latestPrice, prevPrice } = data
+
   return (
     <>
       <Header
-        title="농장 대시보드"
+        title="오늘의 시세"
         subtitle={todayStr}
+        action={
+          <div
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold tracking-wide uppercase"
+            style={{
+              background: 'color-mix(in srgb, var(--primary) 12%, transparent)',
+              color: 'var(--primary)',
+            }}
+          >
+            <Activity size={11} />
+            {data.isDemo && !loading ? '데모' : 'LIVE'}
+          </div>
+        }
       />
 
       <PageContainer className="space-y-4 pb-4">
@@ -200,145 +258,224 @@ export default function DashboardPage() {
             }}
           >
             <AlertTriangle size={14} />
-            <span>데모 데이터로 표시 중입니다. Google Sheets 연동 후 실제 데이터가 표시됩니다.</span>
+            <span>데모 데이터입니다. Google Sheets 연동 시 실제 시세가 표시됩니다.</span>
           </div>
         )}
 
-        {/* ─── Summary Cards ─── */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {/* 오늘 생산량 */}
-          <Card className="animate-fade-in-up stagger-1">
-            <CardHeader
-              icon={<Egg size={18} />}
-              title="오늘 생산"
-              color="var(--primary)"
-            />
-            <p
-              className="mt-3 text-2xl font-bold tabular-nums animate-count-up"
-              style={{ color: 'var(--foreground)' }}
-            >
-              {formatNumber(data.todayProduction)}
-              <span className="ml-1 text-xs font-normal" style={{ color: 'var(--muted)' }}>개</span>
-            </p>
-          </Card>
+        {/* ═══ 육계 시세 — 히어로 카드 ═══ */}
+        <Card className="animate-fade-in-up stagger-1 !p-0 overflow-hidden" padding="sm">
+          {/* 카드 헤더 띠 */}
+          <div
+            className="px-4 py-2.5 flex items-center justify-between"
+            style={{
+              background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
+            }}
+          >
+            <span className="text-xs font-bold tracking-wider text-white/90 uppercase">
+              육계 생계시세
+            </span>
+            {latestPrice && (
+              <span className="text-[10px] font-medium text-white/60">
+                {latestPrice.date} 기준
+              </span>
+            )}
+          </div>
 
-          {/* 파란율 */}
-          <Card className="animate-fade-in-up stagger-2">
-            <CardHeader
-              icon={<AlertTriangle size={18} />}
-              title="파란율"
-              color="var(--accent)"
-            />
-            <p className="mt-3 text-2xl font-bold tabular-nums" style={{ color: 'var(--foreground)' }}>
-              {formatPercent(data.brokenRate)}
-            </p>
-            <p className="text-xs tabular-nums" style={{ color: 'var(--muted)' }}>
-              {formatNumber(data.todayBroken)}개
-            </p>
-          </Card>
+          {/* 육계 3종 대형 표시 */}
+          <div className="p-4">
+            <div className="grid grid-cols-3 gap-3">
+              {HERO_ITEMS.map(({ key, label }) => {
+                const value = latestPrice?.[key] ?? 0
+                const prev = prevPrice?.[key] ?? value
+                return (
+                  <div key={key} className="text-center">
+                    <div className="flex items-center justify-center gap-1 mb-1.5">
+                      <div
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ background: PRICE_COLORS[key] }}
+                      />
+                      <span className="text-[11px] font-semibold" style={{ color: 'var(--muted)' }}>
+                        {label}
+                      </span>
+                    </div>
+                    <p
+                      className="text-xl font-extrabold tabular-nums leading-none sm:text-2xl"
+                      style={{ color: 'var(--foreground)' }}
+                    >
+                      {formatNumber(value)}
+                    </p>
+                    <p className="text-[10px] mt-0.5 mb-1.5" style={{ color: 'var(--muted)' }}>
+                      원/kg
+                    </p>
+                    <DiffBadge current={value} prev={prev} />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </Card>
 
-          {/* 육계시세 */}
-          <Card className="animate-fade-in-up stagger-3">
-            <CardHeader
-              icon={<TrendingUp size={18} />}
-              title="육계(대)"
-              color={PRICE_COLORS.broilerLarge}
-            />
-            <p className="mt-3 text-2xl font-bold tabular-nums" style={{ color: 'var(--foreground)' }}>
-              {data.latestPrice ? formatCurrency(data.latestPrice.broilerLarge) : '-'}
-            </p>
-            <p className="text-xs" style={{ color: 'var(--muted)' }}>/kg</p>
-          </Card>
-
-          {/* 병아리시세 */}
-          <Card className="animate-fade-in-up stagger-4">
-            <CardHeader
-              icon={<TrendingDown size={18} />}
-              title="병아리"
-              color={PRICE_COLORS.chick}
-            />
-            <p className="mt-3 text-2xl font-bold tabular-nums" style={{ color: 'var(--foreground)' }}>
-              {data.latestPrice ? formatCurrency(data.latestPrice.chick) : '-'}
-            </p>
-            <p className="text-xs" style={{ color: 'var(--muted)' }}>/수</p>
-          </Card>
+        {/* ═══ 병아리 + 종계노계 카드 ═══ */}
+        <div className="grid grid-cols-2 gap-3">
+          {SUB_ITEMS.map(({ key, label }, i) => {
+            const value = latestPrice?.[key] ?? 0
+            const prev = prevPrice?.[key] ?? value
+            return (
+              <Card
+                key={key}
+                className={`animate-fade-in-up stagger-${i + 2}`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div
+                    className="h-8 w-8 rounded-xl flex items-center justify-center"
+                    style={{
+                      background: `color-mix(in srgb, ${PRICE_COLORS[key]} 14%, transparent)`,
+                    }}
+                  >
+                    <div
+                      className="h-3 w-3 rounded-full"
+                      style={{ background: PRICE_COLORS[key] }}
+                    />
+                  </div>
+                  <span className="text-xs font-semibold" style={{ color: 'var(--muted)' }}>
+                    {label}
+                  </span>
+                </div>
+                <p
+                  className="text-2xl font-extrabold tabular-nums leading-none sm:text-3xl"
+                  style={{ color: 'var(--foreground)' }}
+                >
+                  {formatNumber(value)}
+                </p>
+                <p className="text-[10px] mt-0.5 mb-2" style={{ color: 'var(--muted)' }}>
+                  {PRICE_UNITS[key]}
+                </p>
+                <DiffBadge current={value} prev={prev} />
+              </Card>
+            )
+          })}
         </div>
 
-        {/* ─── Production Trend Chart ─── */}
-        <Card className="animate-fade-in-up stagger-3" padding="lg">
+        {/* ═══ 전체 시세 요약 테이블 ═══ */}
+        {latestPrice && prevPrice && (
+          <Card className="animate-fade-in-up stagger-3" padding="sm">
+            <div className="px-1 pt-1 pb-2">
+              <h3 className="text-xs font-bold mb-3" style={{ color: 'var(--muted)' }}>
+                시세 비교
+              </h3>
+              <div className="space-y-1.5">
+                {([...HERO_ITEMS, ...SUB_ITEMS]).map(({ key, label }) => {
+                  const current = latestPrice[key]
+                  const prev = prevPrice[key]
+                  const { value: diffVal, direction } = getDiff(current, prev)
+                  const diffColor = direction === 'up'
+                    ? 'var(--danger)'
+                    : direction === 'down'
+                      ? '#4A90D9'
+                      : 'var(--muted)'
+
+                  return (
+                    <div
+                      key={key}
+                      className="flex items-center justify-between rounded-xl px-3 py-2.5"
+                      style={{ background: 'var(--surface-alt)' }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="h-2 w-2 rounded-full"
+                          style={{ background: PRICE_COLORS[key] }}
+                        />
+                        <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+                          {label}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span
+                          className="text-sm font-bold tabular-nums"
+                          style={{ color: 'var(--foreground)' }}
+                        >
+                          {formatCurrency(current)}
+                        </span>
+                        <span
+                          className="text-xs font-semibold tabular-nums min-w-[52px] text-right"
+                          style={{ color: diffColor }}
+                        >
+                          {direction === 'up' && '▲'}
+                          {direction === 'down' && '▼'}
+                          {direction === 'flat' && '-'}
+                          {diffVal > 0 ? ` ${formatNumber(diffVal)}` : ''}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* ═══ 육계 시세 추이 차트 ═══ */}
+        <Card className="animate-fade-in-up stagger-4" padding="lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-                생산량 추이
+                육계 시세 추이
               </h3>
-              <p className="text-xs" style={{ color: 'var(--muted)' }}>최근 7일</p>
+              <p className="text-[11px]" style={{ color: 'var(--muted)' }}>최근 15일 (원/kg)</p>
             </div>
-            <div
-              className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-[10px] font-medium"
-              style={{
-                background: 'color-mix(in srgb, var(--primary) 10%, transparent)',
-                color: 'var(--primary)',
-              }}
-            >
-              <Egg size={10} />
-              일별 총생산
+            <div className="flex flex-wrap gap-2">
+              {HERO_ITEMS.map(({ key, label }) => (
+                <div key={key} className="flex items-center gap-1 text-[10px]">
+                  <div className="h-2 w-2 rounded-full" style={{ background: PRICE_COLORS[key] }} />
+                  <span style={{ color: 'var(--muted)' }}>{label.replace('육계', '')}</span>
+                </div>
+              ))}
             </div>
           </div>
-          <div className="h-48 sm:h-56">
+          <div className="h-52 sm:h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data.productionTrend} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+              <AreaChart data={data.prices} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
                 <defs>
-                  <linearGradient id="prodGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
-                  </linearGradient>
+                  {HERO_ITEMS.map(({ key }) => (
+                    <linearGradient key={key} id={`grad-${key}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={PRICE_COLORS[key]} stopOpacity={0.15} />
+                      <stop offset="95%" stopColor={PRICE_COLORS[key]} stopOpacity={0} />
+                    </linearGradient>
+                  ))}
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 11 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 11 }}
-                  axisLine={false}
-                  tickLine={false}
-                  domain={['dataMin - 100', 'dataMax + 100']}
-                />
-                <Tooltip
-                  content={<ChartTooltip formatter={(v) => formatNumber(v) + '개'} />}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="total"
-                  name="생산량"
-                  stroke="var(--primary)"
-                  strokeWidth={2.5}
-                  fill="url(#prodGradient)"
-                  dot={{ r: 3, fill: 'var(--primary)', strokeWidth: 0 }}
-                  activeDot={{ r: 5, fill: 'var(--primary)', strokeWidth: 2, stroke: '#fff' }}
-                />
+                <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} domain={['dataMin - 50', 'dataMax + 50']} />
+                <Tooltip content={<ChartTooltip formatter={(v) => formatCurrency(v)} />} />
+                {HERO_ITEMS.map(({ key, label }) => (
+                  <Area
+                    key={key}
+                    type="monotone"
+                    dataKey={key}
+                    name={label}
+                    stroke={PRICE_COLORS[key]}
+                    strokeWidth={2}
+                    fill={`url(#grad-${key})`}
+                    dot={{ r: 2, fill: PRICE_COLORS[key], strokeWidth: 0 }}
+                    activeDot={{ r: 4, strokeWidth: 2, stroke: '#fff' }}
+                  />
+                ))}
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </Card>
 
-        {/* ─── Price Trend Chart ─── */}
-        <Card className="animate-fade-in-up stagger-4" padding="lg">
+        {/* ═══ 병아리 + 종계노계 시세 추이 차트 ═══ */}
+        <Card className="animate-fade-in-up stagger-5" padding="lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-                시세 추이
+                병아리 · 종계노계 추이
               </h3>
-              <p className="text-xs" style={{ color: 'var(--muted)' }}>생계시세 (원/kg)</p>
+              <p className="text-[11px]" style={{ color: 'var(--muted)' }}>최근 15일</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              {[
-                { key: 'broilerLarge', label: '대' },
-                { key: 'broilerMedium', label: '중' },
-                { key: 'broilerSmall', label: '소' },
-              ].map(({ key, label }) => (
+              {SUB_ITEMS.map(({ key, label }) => (
                 <div key={key} className="flex items-center gap-1 text-[10px]">
                   <div className="h-2 w-2 rounded-full" style={{ background: PRICE_COLORS[key] }} />
                   <span style={{ color: 'var(--muted)' }}>{label}</span>
@@ -350,25 +487,19 @@ export default function DashboardPage() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.prices} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  content={<ChartTooltip formatter={(v) => formatCurrency(v)} />}
-                />
-                {[
-                  { key: 'broilerLarge', name: '육계(대)' },
-                  { key: 'broilerMedium', name: '육계(중)' },
-                  { key: 'broilerSmall', name: '육계(소)' },
-                ].map(({ key, name }) => (
+                <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} domain={['dataMin - 20', 'dataMax + 20']} />
+                <Tooltip content={<ChartTooltip formatter={(v) => formatCurrency(v)} />} />
+                {SUB_ITEMS.map(({ key, label }) => (
                   <Line
                     key={key}
                     type="monotone"
                     dataKey={key}
-                    name={name}
+                    name={label}
                     stroke={PRICE_COLORS[key]}
-                    strokeWidth={2}
-                    dot={{ r: 2.5, fill: PRICE_COLORS[key], strokeWidth: 0 }}
-                    activeDot={{ r: 4 }}
+                    strokeWidth={2.5}
+                    dot={{ r: 3, fill: PRICE_COLORS[key], strokeWidth: 0 }}
+                    activeDot={{ r: 5, strokeWidth: 2, stroke: '#fff' }}
                   />
                 ))}
               </LineChart>
@@ -376,14 +507,14 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        {/* ─── Statistics Chart ─── */}
-        <Card className="animate-fade-in-up stagger-5" padding="lg">
+        {/* ═══ 종계입식현황 차트 ═══ */}
+        <Card className="animate-fade-in-up stagger-6" padding="lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
                 종계입식현황
               </h3>
-              <p className="text-xs" style={{ color: 'var(--muted)' }}>최근 5년 비교 (천수)</p>
+              <p className="text-[11px]" style={{ color: 'var(--muted)' }}>최근 5년 비교 (천수)</p>
             </div>
             <div className="flex items-center gap-1">
               <BarChart3 size={14} style={{ color: 'var(--muted)' }} />
@@ -403,9 +534,7 @@ export default function DashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="month" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  content={<ChartTooltip formatter={(v) => formatNumber(v) + '천수'} />}
-                />
+                <Tooltip content={<ChartTooltip formatter={(v) => formatNumber(v) + '천수'} />} />
                 {data.statYears.map((year, i) => (
                   <Line
                     key={year}
@@ -414,7 +543,6 @@ export default function DashboardPage() {
                     name={year + '년'}
                     stroke={STAT_COLORS[i]}
                     strokeWidth={year === data.statYears[0] ? 2.5 : 1.5}
-                    strokeDasharray={year === data.statYears[0] ? undefined : undefined}
                     dot={{ r: year === data.statYears[0] ? 3 : 2, fill: STAT_COLORS[i], strokeWidth: 0 }}
                     activeDot={{ r: 4 }}
                     connectNulls={false}
@@ -422,38 +550,6 @@ export default function DashboardPage() {
                 ))}
               </LineChart>
             </ResponsiveContainer>
-          </div>
-        </Card>
-
-        {/* ─── Quick price table ─── */}
-        <Card className="animate-fade-in-up stagger-6" padding="lg">
-          <h3 className="mb-3 text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-            최신 시세 요약
-          </h3>
-          <div className="space-y-2">
-            {data.latestPrice && [
-              { label: '육계(대)', value: data.latestPrice.broilerLarge, unit: '원/kg', color: PRICE_COLORS.broilerLarge },
-              { label: '육계(중)', value: data.latestPrice.broilerMedium, unit: '원/kg', color: PRICE_COLORS.broilerMedium },
-              { label: '육계(소)', value: data.latestPrice.broilerSmall, unit: '원/kg', color: PRICE_COLORS.broilerSmall },
-              { label: '병아리', value: data.latestPrice.chick, unit: '원/수', color: PRICE_COLORS.chick },
-            ].map(({ label, value, unit, color }) => (
-              <div
-                key={label}
-                className="flex items-center justify-between rounded-xl px-3 py-2.5"
-                style={{ background: 'var(--surface-alt)' }}
-              >
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full" style={{ background: color }} />
-                  <span className="text-sm" style={{ color: 'var(--foreground)' }}>{label}</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-sm font-bold tabular-nums" style={{ color: 'var(--foreground)' }}>
-                    {formatNumber(value)}
-                  </span>
-                  <span className="ml-1 text-xs" style={{ color: 'var(--muted)' }}>{unit}</span>
-                </div>
-              </div>
-            ))}
           </div>
         </Card>
       </PageContainer>
