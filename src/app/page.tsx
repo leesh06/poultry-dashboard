@@ -277,11 +277,11 @@ export default function DashboardPage() {
               background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
             }}
           >
-            <span className="text-sm font-bold tracking-wider text-white/90 uppercase">
+            <span className="text-base font-bold tracking-wider text-white/90 uppercase">
               육계 생계시세
             </span>
             {latestPrice && (
-              <span className="text-xs font-medium text-white/60">
+              <span className="text-sm font-medium text-white/60">
                 {latestPrice.date} 기준
               </span>
             )}
@@ -295,22 +295,22 @@ export default function DashboardPage() {
                 const prev = prevPrice?.[key] ?? value
                 return (
                   <div key={key} className="text-center">
-                    <div className="flex items-center justify-center gap-1.5 mb-2">
+                    <div className="flex items-center justify-center gap-1.5 mb-2.5">
                       <div
-                        className="h-3 w-3 rounded-full"
+                        className="h-3.5 w-3.5 rounded-full"
                         style={{ background: PRICE_COLORS[key] }}
                       />
-                      <span className="text-sm font-bold" style={{ color: 'var(--muted)' }}>
+                      <span className="text-base font-bold" style={{ color: 'var(--muted)' }}>
                         {label}
                       </span>
                     </div>
                     <p
-                      className="text-2xl font-extrabold tabular-nums leading-none sm:text-3xl"
+                      className="text-3xl font-extrabold tabular-nums leading-none sm:text-4xl"
                       style={{ color: 'var(--foreground)' }}
                     >
                       {formatNumber(value)}
                     </p>
-                    <p className="text-xs mt-1 mb-2 font-medium" style={{ color: 'var(--muted)' }}>
+                    <p className="text-sm mt-1.5 mb-2.5 font-semibold" style={{ color: 'var(--muted)' }}>
                       원/kg
                     </p>
                     <DiffBadge current={value} prev={prev} />
@@ -334,27 +334,27 @@ export default function DashboardPage() {
               >
                 <div className="flex items-center gap-2.5 mb-3">
                   <div
-                    className="h-9 w-9 rounded-xl flex items-center justify-center"
+                    className="h-10 w-10 rounded-xl flex items-center justify-center"
                     style={{
                       background: `color-mix(in srgb, ${PRICE_COLORS[key]} 14%, transparent)`,
                     }}
                   >
                     <div
-                      className="h-3.5 w-3.5 rounded-full"
+                      className="h-4 w-4 rounded-full"
                       style={{ background: PRICE_COLORS[key] }}
                     />
                   </div>
-                  <span className="text-sm font-bold" style={{ color: 'var(--muted)' }}>
+                  <span className="text-base font-bold" style={{ color: 'var(--muted)' }}>
                     {label}
                   </span>
                 </div>
                 <p
-                  className="text-3xl font-extrabold tabular-nums leading-none sm:text-4xl"
+                  className="text-4xl font-extrabold tabular-nums leading-none sm:text-5xl"
                   style={{ color: 'var(--foreground)' }}
                 >
                   {formatNumber(value)}
                 </p>
-                <p className="text-xs mt-1 mb-3 font-medium" style={{ color: 'var(--muted)' }}>
+                <p className="text-sm mt-1.5 mb-3 font-semibold" style={{ color: 'var(--muted)' }}>
                   {PRICE_UNITS[key]}
                 </p>
                 <DiffBadge current={value} prev={prev} size="lg" />
@@ -367,15 +367,15 @@ export default function DashboardPage() {
         <Card className="animate-fade-in-up stagger-3" padding="lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold" style={{ color: 'var(--foreground)' }}>
+              <h3 className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
                 육계 시세 추이
               </h3>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>최근 15일 (원/kg)</p>
+              <p className="text-sm mt-0.5" style={{ color: 'var(--muted)' }}>최근 15일 (원/kg)</p>
             </div>
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex flex-wrap gap-3">
               {HERO_ITEMS.map(({ key, label }) => (
-                <div key={key} className="flex items-center gap-1.5 text-xs">
-                  <div className="h-2.5 w-2.5 rounded-full" style={{ background: PRICE_COLORS[key] }} />
+                <div key={key} className="flex items-center gap-1.5 text-sm">
+                  <div className="h-3 w-3 rounded-full" style={{ background: PRICE_COLORS[key] }} />
                   <span className="font-medium" style={{ color: 'var(--muted)' }}>{label.replace('육계', '')}</span>
                 </div>
               ))}
@@ -418,15 +418,15 @@ export default function DashboardPage() {
         <Card className="animate-fade-in-up stagger-4" padding="lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold" style={{ color: 'var(--foreground)' }}>
+              <h3 className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
                 병아리 · 종계노계 추이
               </h3>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>최근 15일</p>
+              <p className="text-sm mt-0.5" style={{ color: 'var(--muted)' }}>최근 15일</p>
             </div>
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex flex-wrap gap-3">
               {SUB_ITEMS.map(({ key, label }) => (
-                <div key={key} className="flex items-center gap-1.5 text-xs">
-                  <div className="h-2.5 w-2.5 rounded-full" style={{ background: PRICE_COLORS[key] }} />
+                <div key={key} className="flex items-center gap-1.5 text-sm">
+                  <div className="h-3 w-3 rounded-full" style={{ background: PRICE_COLORS[key] }} />
                   <span className="font-medium" style={{ color: 'var(--muted)' }}>{label}</span>
                 </div>
               ))}
@@ -460,19 +460,19 @@ export default function DashboardPage() {
         <Card className="animate-fade-in-up stagger-5" padding="lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold" style={{ color: 'var(--foreground)' }}>
+              <h3 className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
                 종계입식현황
               </h3>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>최근 5년 비교 (천수)</p>
+              <p className="text-sm mt-0.5" style={{ color: 'var(--muted)' }}>최근 5년 비교 (천수)</p>
             </div>
             <div className="flex items-center gap-1">
-              <BarChart3 size={16} style={{ color: 'var(--muted)' }} />
+              <BarChart3 size={18} style={{ color: 'var(--muted)' }} />
             </div>
           </div>
-          <div className="mb-3 flex flex-wrap gap-x-3.5 gap-y-1">
+          <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1">
             {data.statYears.map((year, i) => (
-              <div key={year} className="flex items-center gap-1.5 text-xs">
-                <div className="h-2.5 w-2.5 rounded-full" style={{ background: STAT_COLORS[i] }} />
+              <div key={year} className="flex items-center gap-1.5 text-sm">
+                <div className="h-3 w-3 rounded-full" style={{ background: STAT_COLORS[i] }} />
                 <span className="font-medium" style={{ color: 'var(--muted)' }}>{year}</span>
               </div>
             ))}
