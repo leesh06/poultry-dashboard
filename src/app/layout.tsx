@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: "농장 대시보드 | 종계 생산 관리",
   description: "종계 농장 생산량, 시세, 입식현황을 한눈에 관리하는 대시보드",
   icons: { icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥚</text></svg>" },
-  manifest: "/manifest.json",
+  manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
