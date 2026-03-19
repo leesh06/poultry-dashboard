@@ -1,10 +1,6 @@
 const CACHE_NAME = 'poultry-dashboard-v1'
-const STATIC_ASSETS = ['/', '/price', '/production', '/statistics']
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
-  )
+self.addEventListener('install', () => {
   self.skipWaiting()
 })
 
@@ -19,15 +15,20 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event
-  // API 요청은 네트워크 우선
+
+  // API 요청은 항상 네트워크
   if (request.url.includes('/api/')) {
-    event.respondWith(
-      fetch(request).catch(() => caches.match(request))
-    )
     return
   }
-  // 나머지는 캐시 우선, 없으면 네트워크
+
+  // 나머지는 네트워크 우선, 실패하면 캐시
   event.respondWith(
-    caches.match(request).then((cached) => cached || fetch(request))
+    fetch(request)
+      .then((response) => {
+        const clone = response.clone()
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
+        return response
+      })
+      .catch(() => caches.match(request))
   )
 })
