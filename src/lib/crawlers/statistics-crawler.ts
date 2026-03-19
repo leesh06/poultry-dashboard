@@ -1,5 +1,8 @@
 import { parse as parseHTML } from 'node-html-parser'
 
+// chicken.or.kr SSL 인증서 체인 이슈 대응
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+
 export interface CrawledStatistics {
   year: number
   months: (number | null)[]  // 12개 (index 0 = 1월)
