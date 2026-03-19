@@ -367,16 +367,16 @@ export default function DashboardPage() {
         <Card className="animate-fade-in-up stagger-3" padding="lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+              <h3 className="text-base font-bold" style={{ color: 'var(--foreground)' }}>
                 육계 시세 추이
               </h3>
-              <p className="text-[11px]" style={{ color: 'var(--muted)' }}>최근 15일 (원/kg)</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>최근 15일 (원/kg)</p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2.5">
               {HERO_ITEMS.map(({ key, label }) => (
-                <div key={key} className="flex items-center gap-1 text-[10px]">
-                  <div className="h-2 w-2 rounded-full" style={{ background: PRICE_COLORS[key] }} />
-                  <span style={{ color: 'var(--muted)' }}>{label.replace('육계', '')}</span>
+                <div key={key} className="flex items-center gap-1.5 text-xs">
+                  <div className="h-2.5 w-2.5 rounded-full" style={{ background: PRICE_COLORS[key] }} />
+                  <span className="font-medium" style={{ color: 'var(--muted)' }}>{label.replace('육계', '')}</span>
                 </div>
               ))}
             </div>
@@ -418,16 +418,16 @@ export default function DashboardPage() {
         <Card className="animate-fade-in-up stagger-4" padding="lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+              <h3 className="text-base font-bold" style={{ color: 'var(--foreground)' }}>
                 병아리 · 종계노계 추이
               </h3>
-              <p className="text-[11px]" style={{ color: 'var(--muted)' }}>최근 15일</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>최근 15일</p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2.5">
               {SUB_ITEMS.map(({ key, label }) => (
-                <div key={key} className="flex items-center gap-1 text-[10px]">
-                  <div className="h-2 w-2 rounded-full" style={{ background: PRICE_COLORS[key] }} />
-                  <span style={{ color: 'var(--muted)' }}>{label}</span>
+                <div key={key} className="flex items-center gap-1.5 text-xs">
+                  <div className="h-2.5 w-2.5 rounded-full" style={{ background: PRICE_COLORS[key] }} />
+                  <span className="font-medium" style={{ color: 'var(--muted)' }}>{label}</span>
                 </div>
               ))}
             </div>
@@ -460,20 +460,20 @@ export default function DashboardPage() {
         <Card className="animate-fade-in-up stagger-5" padding="lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+              <h3 className="text-base font-bold" style={{ color: 'var(--foreground)' }}>
                 종계입식현황
               </h3>
-              <p className="text-[11px]" style={{ color: 'var(--muted)' }}>최근 5년 비교 (천수)</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>최근 5년 비교 (천수)</p>
             </div>
             <div className="flex items-center gap-1">
-              <BarChart3 size={14} style={{ color: 'var(--muted)' }} />
+              <BarChart3 size={16} style={{ color: 'var(--muted)' }} />
             </div>
           </div>
-          <div className="mb-3 flex flex-wrap gap-x-3 gap-y-1">
+          <div className="mb-3 flex flex-wrap gap-x-3.5 gap-y-1">
             {data.statYears.map((year, i) => (
-              <div key={year} className="flex items-center gap-1 text-[10px]">
-                <div className="h-2 w-2 rounded-full" style={{ background: STAT_COLORS[i] }} />
-                <span style={{ color: 'var(--muted)' }}>{year}</span>
+              <div key={year} className="flex items-center gap-1.5 text-xs">
+                <div className="h-2.5 w-2.5 rounded-full" style={{ background: STAT_COLORS[i] }} />
+                <span className="font-medium" style={{ color: 'var(--muted)' }}>{year}</span>
               </div>
             ))}
           </div>
@@ -481,7 +481,7 @@ export default function DashboardPage() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.statistics} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} interval={0} />
                 <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<ChartTooltip formatter={(v) => formatNumber(v) + '천수'} />} />
                 {data.statYears.map((year, i) => (

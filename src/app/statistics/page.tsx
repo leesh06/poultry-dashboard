@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Header } from '@/components/layout/Header'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Card } from '@/components/ui/Card'
@@ -83,6 +83,32 @@ export default function StatisticsPage() {
   const [crawling, setCrawling] = useState(false)
   const [isDemo, setIsDemo] = useState(true)
   const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const res = await fetch('/api/statistics')
+        const result = await res.json()
+        if (result.success && result.data?.length > 0) {
+          const recentYears = result.data.slice(0, 5)
+          const yearLabels = recentYears.map((s: { year: number }) => String(s.year))
+          const converted: FiveYearChartData[] = MONTHS.map((month, mi) => {
+            const row: FiveYearChartData = { month }
+            recentYears.forEach((yearData: { year: number; months: (number | null)[] }) => {
+              row[String(yearData.year)] = yearData.months[mi]
+            })
+            return row
+          })
+          setChartData(converted)
+          setYears(yearLabels)
+          setIsDemo(false)
+        }
+      } catch {
+        // API 미연결 - 데모 데이터 유지
+      }
+    }
+    loadData()
+  }, [])
 
   const yearlyTotals = calcYearlyTotals(chartData, years)
 
@@ -227,6 +253,7 @@ export default function StatisticsPage() {
                   tick={{ fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
+                  interval={0}
                 />
                 <YAxis
                   tick={{ fontSize: 11 }}

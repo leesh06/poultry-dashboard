@@ -61,7 +61,8 @@ export default function PricePage() {
       })
       const data = await res.json()
       if (data.success && data.data) {
-        setPrices(data.data.prices)
+        const sortedPrices = [...data.data.prices].sort((a: ChickenPrice, b: ChickenPrice) => a.date.localeCompare(b.date))
+        setPrices(sortedPrices)
         setAverage(data.data.average)
         setIsDemo(false)
         setMessage(data.message || '시세 데이터를 가져왔습니다')
