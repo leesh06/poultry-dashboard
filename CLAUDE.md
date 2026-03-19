@@ -35,7 +35,7 @@ chicken.or.kr → crawlers (파싱) → API Routes → Google Sheets (저장)
 
 | 라우트 | 설명 |
 |--------|------|
-| `/` | 대시보드 (요약 카드 + 차트 3개) |
+| `/` | 대시보드 (시세 중심 — 육계/병아리/종계노계 시세 카드 + 시세추이 차트 + 입식현황 차트) |
 | `/production` | 생산 기록 입력 (동별 오전/오후) |
 | `/price` | 시세 조회 + 크롤링 |
 | `/statistics` | 종계입식현황 + 5년 비교 차트 |
@@ -84,7 +84,7 @@ Vercel 환경변수에도 동일하게 설정 필요:
 - **크롤러** (`src/lib/crawlers/`): chicken.or.kr 시세 크롤러 + 입식현황 크롤러 — 실제 크롤링 테스트 통과
 - **Google Sheets 연동**: `.env.local` 설정 완료, 서비스 계정(`midyear-grid-417003`) 인증, 시트 4개(생산기록/시세기록/종계입식현황/설정) 헤더 세팅 완료, CRUD 동작 확인
 - **API Routes** (`src/app/api/`): production(GET/POST), price(GET), statistics(GET), crawl/price(POST), crawl/statistics(POST), cron(GET) — 총 6개 엔드포인트
-- **대시보드 실시간 데이터**: 대시보드(/) 페이지가 API에서 시세/입식현황 실제 데이터를 가져와 차트/카드에 반영. API 실패 시 데모 데이터 폴백.
+- **대시보드 시세 중심 리디자인**: 생산 관련 데이터 제거, 시세 중심으로 전면 재구성. 육계(대/중/소) 히어로 카드 + 병아리/종계노계 카드 + 전일대비 등락 표시 + 시세추이 차트(육계/병아리·종계노계 분리) + 입식현황 차트. API 실패 시 데모 데이터 폴백.
 - **자동 크롤링**: Vercel Cron Job으로 매일 09:00 KST 시세 + 입식현황 자동 크롤링 → Google Sheets 저장
 - **UI 컴포넌트**: BottomNav, Header, PageContainer, Card, Button, LoadingSpinner, EmptyState, ChartTooltip
 - **페이지 4개**: 대시보드(/), 생산기록(/production), 시세조회(/price), 입식현황(/statistics)
@@ -93,7 +93,10 @@ Vercel 환경변수에도 동일하게 설정 필요:
 - **Vercel 배포**: https://poultry-dashboard-mu.vercel.app/ — 환경변수 설정 완료, 자동 배포 연결
 - **Git**: GitHub 레포 연결, master 브랜치에서 작업 중
 
+- **생산기록 최근기록 연동**: `/production` 페이지 하단 "최근 기록" 섹션이 `/api/production` API에서 실제 데이터를 가져와 표시. 최근 10건, 날짜별 총생산량/파란수/파란율 + 동별 합계 표시. 저장 후 자동 갱신.
+- **입식현황 API 자동 로드**: `/statistics` 페이지가 로드 시 `/api/statistics`에서 자동으로 데이터를 가져옴 (크롤링 버튼 없이도 Google Sheets 데이터 표시)
+- **시세 탭 정렬 수정**: 시세 가져오기 후 날짜 오름차순 정렬 (차트 X축 좌→우 = 과거→최신)
+
 ### 미완료 작업
 
-- **생산기록 히스토리**: `/production` 페이지 하단 "최근 기록" 섹션 — 데이터 입력 후 표시 확인 필요
 - **생산기록 입력 테스트**: 실제로 생산량을 입력해보고 Google Sheets 저장 + 대시보드 반영 확인
