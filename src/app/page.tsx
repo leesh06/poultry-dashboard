@@ -237,7 +237,7 @@ export default function DashboardPage() {
     <>
       <Header
         title="오늘의 시세"
-        subtitle={todayStr}
+        subtitle={`${todayStr} · 매일 오전 11시 업데이트`}
         action={
           <div
             className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold tracking-wide uppercase"

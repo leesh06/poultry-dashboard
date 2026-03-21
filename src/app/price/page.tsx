@@ -231,7 +231,7 @@ export default function PricePage() {
 
           {/* Mobile: Card view */}
           <div className="sm:hidden space-y-2">
-            {prices.map((price, i) => (
+            {[...prices].reverse().map((price, i) => (
               <div
                 key={i}
                 className="rounded-xl p-3"
@@ -285,7 +285,7 @@ export default function PricePage() {
                 </tr>
               </thead>
               <tbody>
-                {prices.map((price, i) => (
+                {[...prices].reverse().map((price, i) => (
                   <tr
                     key={i}
                     className="transition-colors"
