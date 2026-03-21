@@ -2,6 +2,12 @@ import { getSheets, SPREADSHEET_ID, SHEET_NAMES } from './client'
 import { ChickenPrice } from '@/types/price'
 
 const RANGE = `${SHEET_NAMES.price}!A:F`
+const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'] as const
+
+function getDayOfWeek(dateStr: string): string {
+  const d = new Date(dateStr + 'T00:00:00')
+  return DAY_NAMES[d.getDay()] || ''
+}
 
 export async function getPriceRecords(startDate?: string, endDate?: string): Promise<ChickenPrice[]> {
   const sheets = getSheets()
@@ -15,7 +21,7 @@ export async function getPriceRecords(startDate?: string, endDate?: string): Pro
 
   let records: ChickenPrice[] = rows.slice(1).map((row) => ({
     date: row[0] || '',
-    dayOfWeek: '',
+    dayOfWeek: getDayOfWeek(row[0] || ''),
     broilerLarge: parseInt(row[1] || '0', 10),
     broilerMedium: parseInt(row[2] || '0', 10),
     broilerSmall: parseInt(row[3] || '0', 10),
