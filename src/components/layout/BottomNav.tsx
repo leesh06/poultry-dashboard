@@ -2,11 +2,10 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, ClipboardList, TrendingUp, BarChart3 } from 'lucide-react'
+import { Home, TrendingUp, BarChart3 } from 'lucide-react'
 
 const NAV_ITEMS = [
   { href: '/', label: '대시보드', icon: Home },
-  { href: '/production', label: '생산기록', icon: ClipboardList },
   { href: '/price', label: '시세', icon: TrendingUp },
   { href: '/statistics', label: '입식현황', icon: BarChart3 },
 ] as const
@@ -27,7 +26,7 @@ export function BottomNav() {
         }}
       >
         <div
-          className="grid grid-cols-4"
+          className="grid grid-cols-3"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
@@ -42,7 +41,7 @@ export function BottomNav() {
                 }}
               >
                 <div
-                  className="relative flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-300"
+                  className="relative flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300"
                   style={{
                     background: isActive
                       ? 'color-mix(in srgb, var(--primary) 12%, transparent)'
@@ -51,12 +50,12 @@ export function BottomNav() {
                   }}
                 >
                   <Icon
-                    size={20}
+                    size={24}
                     strokeWidth={isActive ? 2.5 : 1.8}
                   />
                 </div>
                 <span
-                  className="text-[10px] font-medium tracking-tight transition-all duration-200"
+                  className="text-xs font-medium tracking-tight transition-all duration-200"
                   style={{
                     opacity: isActive ? 1 : 0.7,
                     fontWeight: isActive ? 700 : 500,

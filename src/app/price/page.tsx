@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Header } from '@/components/layout/Header'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Card } from '@/components/ui/Card'
@@ -49,6 +49,38 @@ export default function PricePage() {
   const [loading, setLoading] = useState(false)
   const [isDemo, setIsDemo] = useState(true)
   const [message, setMessage] = useState('')
+
+  // 페이지 로드 시 Google Sheets에서 저장된 시세 자동 로드
+  useEffect(() => {
+    const loadPrices = async () => {
+      setLoading(true)
+      try {
+        const res = await fetch(`/api/price?startDate=${startDate}&endDate=${endDate}`)
+        const data = await res.json()
+        if (data.success && data.data && data.data.length > 0) {
+          const records = data.data as ChickenPrice[]
+          const sortedPrices = [...records].sort((a, b) => a.date.localeCompare(b.date))
+          setPrices(sortedPrices)
+          setIsDemo(false)
+          // 평균값 계산
+          const len = records.length
+          setAverage({
+            broilerLarge: Math.round(records.reduce((s, p) => s + p.broilerLarge, 0) / len),
+            broilerMedium: Math.round(records.reduce((s, p) => s + p.broilerMedium, 0) / len),
+            broilerSmall: Math.round(records.reduce((s, p) => s + p.broilerSmall, 0) / len),
+            chick: Math.round(records.reduce((s, p) => s + p.chick, 0) / len),
+            breedingHen: Math.round(records.reduce((s, p) => s + p.breedingHen, 0) / len),
+          })
+        }
+      } catch {
+        // 실패 시 데모 데이터 유지
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadPrices()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleCrawl = async () => {
     setCrawling(true)
@@ -152,6 +184,12 @@ export default function PricePage() {
             )}
           </div>
         </Card>
+
+        {loading && (
+          <div className="flex items-center justify-center py-8 animate-fade-in">
+            <LoadingSpinner size={28} />
+          </div>
+        )}
 
         {/* ─── Price Chart ─── */}
         <Card className="animate-fade-in-up stagger-2" padding="lg">
