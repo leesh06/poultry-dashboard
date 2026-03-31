@@ -111,6 +111,7 @@ export default function StatisticsPage() {
   }, [])
 
   const yearlyTotals = calcYearlyTotals(chartData, years)
+  const currentMonthIndex = new Date().getMonth()
 
   const handleCrawl = async () => {
     setCrawling(true)
@@ -164,17 +165,14 @@ export default function StatisticsPage() {
         }
       />
 
-      <PageContainer className="space-y-4 pb-4">
+      <PageContainer className="pb-4">
         {message && (
           <div
-            className="rounded-xl px-4 py-3 text-xs text-center animate-fade-in"
+            className="py-3 mb-4 text-xs animate-fade-in"
             style={{
-              background: message.includes('오류') || message.includes('못')
-                ? 'color-mix(in srgb, var(--danger) 10%, transparent)'
-                : 'color-mix(in srgb, var(--success) 10%, transparent)',
-              color: message.includes('오류') || message.includes('못')
-                ? 'var(--danger)'
-                : 'var(--success)',
+              color: message.includes('오류') || message.includes('못') ? 'var(--danger)' : 'var(--success)',
+              borderLeft: `3px solid ${message.includes('오류') || message.includes('못') ? 'var(--danger)' : 'var(--success)'}`,
+              paddingLeft: '12px',
             }}
           >
             {message}
@@ -182,48 +180,59 @@ export default function StatisticsPage() {
         )}
 
         {/* ─── Year Summary Cards ─── */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5 animate-fade-in-up stagger-1">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5 animate-card-enter stagger-1">
           {yearlyTotals.slice(0, 5).map(({ year, total, changeRate }, i) => (
-            <Card key={year} padding="sm">
+            <Card
+              key={year}
+              variant={i === 0 ? 'elevated' : 'inset'}
+              padding="sm"
+              className={i === 0 ? 'col-span-2 sm:col-span-1' : ''}
+            >
               <div className="flex items-center gap-1.5 mb-1">
-                <div className="h-2 w-2 rounded-full" style={{ background: STAT_COLORS[i] }} />
-                <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>
+                <div className="h-2.5 w-2.5 rounded-full" style={{ background: STAT_COLORS[i] }} />
+                <span className="text-label">
                   {year}년
                 </span>
               </div>
-              <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--foreground)' }}>
+              <p
+                className={`tabular-nums ${i === 0 ? 'text-metric-md' : 'text-lg font-bold'}`}
+                style={{ color: 'var(--foreground)' }}
+              >
                 {formatNumber(total)}
               </p>
               {changeRate !== null && (
-                <div className="flex items-center gap-0.5 text-xs">
+                <span
+                  className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums mt-1"
+                  style={{
+                    color: changeRate > 0 ? 'var(--success)' : changeRate < 0 ? 'var(--danger)' : 'var(--muted)',
+                    background: changeRate > 0
+                      ? 'var(--surface-cool)'
+                      : changeRate < 0
+                        ? 'var(--surface-warm)'
+                        : 'var(--surface-alt)',
+                  }}
+                >
                   {changeRate > 0 ? (
-                    <ArrowUpRight size={12} style={{ color: 'var(--success)' }} />
+                    <ArrowUpRight size={12} />
                   ) : changeRate < 0 ? (
-                    <ArrowDownRight size={12} style={{ color: 'var(--danger)' }} />
+                    <ArrowDownRight size={12} />
                   ) : (
-                    <Minus size={12} style={{ color: 'var(--muted)' }} />
+                    <Minus size={12} />
                   )}
-                  <span
-                    className="tabular-nums"
-                    style={{
-                      color: changeRate > 0 ? 'var(--success)' : changeRate < 0 ? 'var(--danger)' : 'var(--muted)',
-                    }}
-                  >
-                    {changeRate > 0 ? '+' : ''}{changeRate.toFixed(1)}%
-                  </span>
-                </div>
+                  {changeRate > 0 ? '+' : ''}{changeRate.toFixed(1)}%
+                </span>
               )}
-              <p className="text-[10px]" style={{ color: 'var(--muted)' }}>천수</p>
+              <p className="text-[10px] mt-0.5" style={{ color: 'var(--muted)' }}>천수</p>
             </Card>
           ))}
         </div>
 
         {/* ─── 5 Year Chart ─── */}
-        <Card className="animate-fade-in-up stagger-2" padding="lg">
+        <Card variant="base" className="animate-card-enter stagger-2 mt-6" padding="lg">
           <div className="mb-4">
             <div className="flex items-center gap-2">
               <BarChart3 size={16} style={{ color: 'var(--primary)' }} />
-              <h3 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+              <h3 className="text-section">
                 최근 5년간 종계입식변화
               </h3>
             </div>
@@ -237,14 +246,24 @@ export default function StatisticsPage() {
               <div key={year} className="flex items-center gap-1.5 text-xs">
                 <div
                   className="h-[3px] w-4 rounded-full"
-                  style={{ background: STAT_COLORS[i] }}
+                  style={{
+                    background: STAT_COLORS[i],
+                    opacity: i === 0 ? 1 : 0.6,
+                  }}
                 />
-                <span style={{ color: 'var(--muted)' }}>{year}</span>
+                <span
+                  style={{
+                    color: 'var(--muted)',
+                    fontWeight: i === 0 ? 700 : 400,
+                  }}
+                >
+                  {year}
+                </span>
               </div>
             ))}
           </div>
 
-          <div className="h-64 sm:h-80">
+          <div className="h-64 sm:h-80 animate-wipe-in">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: -16 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -276,9 +295,10 @@ export default function StatisticsPage() {
                     dataKey={year}
                     name={year + '년'}
                     stroke={STAT_COLORS[i]}
-                    strokeWidth={i === 0 ? 3 : 1.5}
+                    strokeWidth={i === 0 ? 3.5 : 1.5}
+                    strokeOpacity={i === 0 ? 1 : 0.5}
                     dot={{
-                      r: i === 0 ? 4 : 2.5,
+                      r: i === 0 ? 4.5 : 2.5,
                       fill: STAT_COLORS[i],
                       strokeWidth: i === 0 ? 2 : 0,
                       stroke: i === 0 ? '#fff' : undefined,
@@ -293,11 +313,8 @@ export default function StatisticsPage() {
         </Card>
 
         {/* ─── Data Table (horizontally scrollable) ─── */}
-        <Card className="animate-fade-in-up stagger-3 overflow-hidden" padding="sm">
-          <h3
-            className="mb-3 px-2 text-sm font-semibold"
-            style={{ color: 'var(--foreground)' }}
-          >
+        <Card variant="base" className="animate-card-enter stagger-3 overflow-hidden mt-4" padding="sm">
+          <h3 className="mb-3 px-2 text-section">
             연도별 상세
           </h3>
 
@@ -306,13 +323,21 @@ export default function StatisticsPage() {
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
                   <th
-                    className="sticky left-0 z-10 px-2 py-2 text-left font-semibold"
-                    style={{ background: 'var(--card-bg)', color: 'var(--muted)' }}
+                    className="sticky left-0 z-10 px-2 py-2 text-left text-label"
+                    style={{ background: 'var(--card-bg)' }}
                   >
                     구분
                   </th>
-                  {MONTHS.map(m => (
-                    <th key={m} className="px-2 py-2 text-right font-medium" style={{ color: 'var(--muted)' }}>
+                  {MONTHS.map((m, mi) => (
+                    <th
+                      key={m}
+                      className="px-2 py-2 text-right font-medium"
+                      style={{
+                        color: 'var(--muted)',
+                        background: mi === currentMonthIndex ? 'var(--surface-cool)' : 'transparent',
+                        borderRadius: mi === currentMonthIndex ? '8px 8px 0 0' : '0',
+                      }}
+                    >
                       {m}
                     </th>
                   ))}
@@ -332,7 +357,7 @@ export default function StatisticsPage() {
                     <tr
                       key={year}
                       style={{
-                        borderBottom: '1px solid color-mix(in srgb, var(--border-color) 50%, transparent)',
+                        borderBottom: '1px solid var(--border-color)',
                       }}
                     >
                       <td
@@ -343,7 +368,7 @@ export default function StatisticsPage() {
                         }}
                       >
                         <div className="flex items-center gap-1.5">
-                          <div className="h-2 w-2 rounded-full" style={{ background: STAT_COLORS[yi] }} />
+                          <div className="h-2.5 w-2.5 rounded-full" style={{ background: STAT_COLORS[yi] }} />
                           {year}
                         </div>
                       </td>
@@ -356,6 +381,7 @@ export default function StatisticsPage() {
                             style={{
                               color: val != null ? 'var(--foreground)' : 'var(--muted)',
                               opacity: val != null ? 1 : 0.3,
+                              background: mi === currentMonthIndex ? 'var(--surface-cool)' : 'transparent',
                             }}
                           >
                             {val != null ? formatNumber(val as number) : '-'}

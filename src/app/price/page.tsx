@@ -122,13 +122,13 @@ export default function PricePage() {
         subtitle="대한양계협회 생계시세"
       />
 
-      <PageContainer className="space-y-4 pb-4">
+      <PageContainer className="pb-4">
         {/* ─── Date Range & Crawl ─── */}
-        <Card className="animate-fade-in-up stagger-1">
+        <Card variant="base" className="animate-card-enter stagger-1">
           <div className="flex flex-col gap-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 flex items-center gap-1 text-xs font-medium" style={{ color: 'var(--muted)' }}>
+                <label className="mb-1 flex items-center gap-1 text-label">
                   <Calendar size={12} />
                   시작일
                 </label>
@@ -145,7 +145,7 @@ export default function PricePage() {
                 />
               </div>
               <div>
-                <label className="mb-1 flex items-center gap-1 text-xs font-medium" style={{ color: 'var(--muted)' }}>
+                <label className="mb-1 flex items-center gap-1 text-label">
                   <Calendar size={12} />
                   종료일
                 </label>
@@ -192,27 +192,27 @@ export default function PricePage() {
         )}
 
         {/* ─── Price Chart ─── */}
-        <Card className="animate-fade-in-up stagger-2" padding="lg">
+        <Card variant="base" className="animate-card-enter stagger-2 mt-4" padding="lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+              <h3 className="text-section">
                 시세 추이
               </h3>
-              <p className="text-xs" style={{ color: 'var(--muted)' }}>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
                 {isDemo ? '데모 데이터' : `${prices.length}일간 시세`}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               {PRICE_KEYS.map(key => (
                 <div key={key} className="flex items-center gap-1 text-[10px]">
-                  <div className="h-2 w-2 rounded-full" style={{ background: PRICE_COLORS[key] }} />
+                  <div className="h-2.5 w-2.5 rounded-full" style={{ background: PRICE_COLORS[key] }} />
                   <span style={{ color: 'var(--muted)' }}>{PRICE_LABELS[key]}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="h-56 sm:h-72">
+          <div className="h-56 sm:h-72 animate-wipe-in">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -238,18 +238,18 @@ export default function PricePage() {
 
         {/* ─── Average Summary ─── */}
         {average && (
-          <Card className="animate-fade-in" padding="md">
-            <h3 className="mb-2 text-xs font-semibold" style={{ color: 'var(--muted)' }}>
+          <Card variant="elevated" className="animate-fade-in mt-4" padding="md">
+            <h3 className="mb-3 text-label">
               기간 평균
             </h3>
             <div className="grid grid-cols-5 gap-2 text-center">
               {PRICE_KEYS.map(key => (
                 <div key={key}>
-                  <div className="h-1 rounded-full mb-2" style={{ background: PRICE_COLORS[key] }} />
-                  <p className="text-[10px]" style={{ color: 'var(--muted)' }}>
+                  <div className="h-1.5 rounded-full mb-2" style={{ background: PRICE_COLORS[key] }} />
+                  <p className="text-[10px] mb-0.5" style={{ color: 'var(--muted)' }}>
                     {PRICE_LABELS[key]}
                   </p>
-                  <p className="text-sm font-bold tabular-nums" style={{ color: 'var(--foreground)' }}>
+                  <p className="text-base font-bold tabular-nums" style={{ color: 'var(--foreground)' }}>
                     {formatNumber(average[key])}
                   </p>
                 </div>
@@ -259,10 +259,9 @@ export default function PricePage() {
         )}
 
         {/* ─── Price Table (scrollable on mobile) ─── */}
-        <Card className="animate-fade-in-up stagger-3 overflow-hidden" padding="sm">
+        <Card variant="base" className="animate-card-enter stagger-3 overflow-hidden mt-4" padding="sm">
           <h3
-            className="mb-3 px-2 text-sm font-semibold"
-            style={{ color: 'var(--foreground)' }}
+            className="mb-3 px-2 text-section"
           >
             시세 상세
           </h3>
@@ -273,10 +272,12 @@ export default function PricePage() {
               <div
                 key={i}
                 className="rounded-xl p-3"
-                style={{ background: 'var(--surface-alt)' }}
+                style={{
+                  background: i % 2 === 0 ? 'var(--surface-alt)' : 'var(--surface-warm)',
+                }}
               >
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-xs font-medium" style={{ color: 'var(--foreground)' }}>
+                  <span className="text-xs font-semibold" style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family-display)' }}>
                     {price.date} ({price.dayOfWeek})
                   </span>
                 </div>
@@ -312,11 +313,11 @@ export default function PricePage() {
           <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <th className="px-3 py-2 text-left text-xs font-medium" style={{ color: 'var(--muted)' }}>일자</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium" style={{ color: 'var(--muted)' }}>요일</th>
+                <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
+                  <th className="px-3 py-2 text-left text-label">일자</th>
+                  <th className="px-3 py-2 text-left text-label">요일</th>
                   {PRICE_KEYS.map(key => (
-                    <th key={key} className="px-3 py-2 text-right text-xs font-medium" style={{ color: PRICE_COLORS[key] }}>
+                    <th key={key} className="px-3 py-2 text-right text-xs font-semibold" style={{ color: PRICE_COLORS[key] }}>
                       {PRICE_LABELS[key]}
                     </th>
                   ))}
@@ -327,15 +328,12 @@ export default function PricePage() {
                   <tr
                     key={i}
                     className="transition-colors"
-                    style={{ borderBottom: '1px solid color-mix(in srgb, var(--border-color) 50%, transparent)' }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'var(--surface-alt)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'transparent'
+                    style={{
+                      borderBottom: '1px solid var(--border-color)',
+                      background: i % 2 === 1 ? 'var(--surface-alt)' : 'transparent',
                     }}
                   >
-                    <td className="px-3 py-2.5 tabular-nums" style={{ color: 'var(--foreground)' }}>{price.date}</td>
+                    <td className="px-3 py-2.5 tabular-nums font-medium" style={{ color: 'var(--foreground)' }}>{price.date}</td>
                     <td className="px-3 py-2.5" style={{ color: 'var(--muted)' }}>{price.dayOfWeek}</td>
                     {PRICE_KEYS.map(key => (
                       <td key={key} className="px-3 py-2.5 text-right font-medium tabular-nums" style={{ color: 'var(--foreground)' }}>

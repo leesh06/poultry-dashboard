@@ -26,9 +26,9 @@ interface BuildingInput {
 }
 
 const BUILDING_COLORS: Record<BuildingNumber, string> = {
-  1: '#2d5a27',
-  2: '#c4704b',
-  3: '#4a7ec4',
+  1: '#2E7D32',
+  2: '#BF5B3A',
+  3: '#1976D2',
 }
 
 export default function ProductionPage() {
@@ -137,13 +137,13 @@ export default function ProductionPage() {
         subtitle="일별 동별 생산량을 기록합니다"
       />
 
-      <PageContainer className="space-y-4 pb-4">
+      <PageContainer className="pb-4">
         {/* ─── Date & Session Selector ─── */}
-        <Card className="animate-fade-in-up stagger-1">
+        <Card variant="base" className="animate-card-enter stagger-1">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             {/* Date */}
             <div className="flex-1">
-              <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--muted)' }}>
+              <label className="mb-1 block text-label">
                 날짜
               </label>
               <input
@@ -160,20 +160,20 @@ export default function ProductionPage() {
               <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>{displayDate}</p>
             </div>
 
-            {/* Session Toggle */}
+            {/* Session Toggle — pill 형태 */}
             <div className="flex-1">
-              <label className="mb-1 block text-xs font-medium" style={{ color: 'var(--muted)' }}>
+              <label className="mb-1 block text-label">
                 시간대
               </label>
               <div
-                className="flex rounded-xl p-1"
+                className="flex rounded-full p-1"
                 style={{ background: 'var(--surface-alt)' }}
               >
                 {(['morning', 'afternoon'] as Session[]).map((s) => (
                   <button
                     key={s}
                     onClick={() => setSession(s)}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2.5 text-sm font-medium transition-all duration-200"
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-full py-2.5 text-sm font-medium transition-all duration-200"
                     style={{
                       background: session === s ? 'var(--surface)' : 'transparent',
                       color: session === s ? 'var(--foreground)' : 'var(--muted)',
@@ -193,88 +193,99 @@ export default function ProductionPage() {
         {BUILDINGS.map((building) => (
           <Card
             key={building}
-            className={`animate-fade-in-up stagger-${building + 1}`}
+            variant="base"
+            padding="none"
+            className={`animate-card-enter stagger-${building + 1} mt-4 overflow-hidden`}
           >
-            <div className="mb-3 flex items-center gap-2">
+            {/* 좌측 색상 바를 flex로 구현 */}
+            <div className="flex">
               <div
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold text-white"
+                className="w-1 flex-shrink-0"
                 style={{ background: BUILDING_COLORS[building] }}
-              >
-                {building}
-              </div>
-              <h3 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-                {BUILDING_LABELS[building]}
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              {/* 생산량 */}
-              <div>
-                <label className="mb-1 flex items-center gap-1 text-xs font-medium" style={{ color: 'var(--muted)' }}>
-                  <Egg size={12} />
-                  생산량
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    placeholder="0"
-                    value={buildings[building].count}
-                    onChange={(e) => updateBuilding(building, 'count', e.target.value)}
-                    className="w-full rounded-xl px-3 py-3 text-lg font-bold tabular-nums outline-none transition-all"
-                    style={{
-                      background: 'var(--surface-alt)',
-                      color: 'var(--foreground)',
-                      border: '2px solid transparent',
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = BUILDING_COLORS[building]
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = 'transparent'
-                    }}
-                  />
-                  <span
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs"
-                    style={{ color: 'var(--muted)' }}
+              />
+              <div className="flex-1 p-4 sm:p-5">
+                <div className="mb-3 flex items-center gap-2">
+                  <div
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold text-white"
+                    style={{ background: BUILDING_COLORS[building] }}
                   >
-                    개
-                  </span>
+                    {building}
+                  </div>
+                  <h3 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+                    {BUILDING_LABELS[building]}
+                  </h3>
                 </div>
-              </div>
 
-              {/* 파란수 */}
-              <div>
-                <label className="mb-1 flex items-center gap-1 text-xs font-medium" style={{ color: 'var(--accent)' }}>
-                  <Egg size={12} />
-                  파란
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    placeholder="0"
-                    value={buildings[building].brokenCount}
-                    onChange={(e) => updateBuilding(building, 'brokenCount', e.target.value)}
-                    className="w-full rounded-xl px-3 py-3 text-lg font-bold tabular-nums outline-none transition-all"
-                    style={{
-                      background: 'color-mix(in srgb, var(--accent) 5%, var(--surface-alt))',
-                      color: 'var(--foreground)',
-                      border: '2px solid transparent',
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = 'var(--accent)'
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = 'transparent'
-                    }}
-                  />
-                  <span
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs"
-                    style={{ color: 'var(--muted)' }}
-                  >
-                    개
-                  </span>
+                <div className="grid grid-cols-2 gap-3">
+                  {/* 생산량 */}
+                  <div>
+                    <label className="mb-1 flex items-center gap-1 text-label">
+                      <Egg size={12} />
+                      생산량
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        placeholder="0"
+                        value={buildings[building].count}
+                        onChange={(e) => updateBuilding(building, 'count', e.target.value)}
+                        className="w-full rounded-xl px-3 py-3 text-lg font-bold tabular-nums outline-none transition-all"
+                        style={{
+                          background: 'var(--surface-alt)',
+                          color: 'var(--foreground)',
+                          border: '2px solid transparent',
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = BUILDING_COLORS[building]
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = 'transparent'
+                        }}
+                      />
+                      <span
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-xs"
+                        style={{ color: 'var(--muted)' }}
+                      >
+                        개
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 파란수 */}
+                  <div>
+                    <label className="mb-1 flex items-center gap-1 text-label" style={{ color: 'var(--accent)' }}>
+                      <Egg size={12} />
+                      파란
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        placeholder="0"
+                        value={buildings[building].brokenCount}
+                        onChange={(e) => updateBuilding(building, 'brokenCount', e.target.value)}
+                        className="w-full rounded-xl px-3 py-3 text-lg font-bold tabular-nums outline-none transition-all"
+                        style={{
+                          background: 'var(--surface-warm)',
+                          color: 'var(--foreground)',
+                          border: '2px solid transparent',
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = 'var(--accent)'
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = 'transparent'
+                        }}
+                      />
+                      <span
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-xs"
+                        style={{ color: 'var(--muted)' }}
+                      >
+                        개
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -282,13 +293,13 @@ export default function ProductionPage() {
         ))}
 
         {/* ─── Summary & Memo ─── */}
-        <Card className="animate-fade-in-up stagger-5">
+        <Card variant="elevated" className="animate-card-enter stagger-5 mt-5">
           {/* Summary row */}
           <div
-            className="mb-3 flex items-center justify-between rounded-xl px-3 py-2.5"
+            className="mb-3 flex items-center justify-between rounded-xl px-3 py-3"
             style={{ background: 'var(--surface-alt)' }}
           >
-            <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>합계</span>
+            <span className="text-label">합계</span>
             <div className="flex items-center gap-4 text-sm font-bold tabular-nums">
               <span style={{ color: 'var(--primary)' }}>
                 {formatNumber(totalCount)}개
@@ -324,7 +335,7 @@ export default function ProductionPage() {
           loading={saving}
           icon={saved ? <Check size={18} /> : <Save size={18} />}
           onClick={handleSave}
-          className="w-full animate-fade-in-up stagger-6"
+          className="w-full animate-card-enter stagger-6 mt-4 !h-14"
           style={saved ? {
             background: 'var(--success)',
           } : undefined}
@@ -335,7 +346,7 @@ export default function ProductionPage() {
         {/* ─── History Toggle ─── */}
         <button
           onClick={() => setShowHistory(!showHistory)}
-          className="flex w-full items-center justify-center gap-1 py-2 text-xs font-medium transition-colors"
+          className="flex w-full items-center justify-center gap-1 py-3 mt-2 text-xs font-medium transition-colors"
           style={{ color: 'var(--muted)' }}
         >
           {showHistory ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -343,7 +354,7 @@ export default function ProductionPage() {
         </button>
 
         {showHistory && (
-          <Card className="animate-slide-up">
+          <Card variant="base" className="animate-slide-up">
             {historyLoading ? (
               <div className="text-center py-8">
                 <p className="text-sm" style={{ color: 'var(--muted)' }}>불러오는 중...</p>
@@ -367,7 +378,7 @@ export default function ProductionPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                <h4 className="text-xs font-semibold" style={{ color: 'var(--muted)' }}>
+                <h4 className="text-label">
                   최근 기록 (최대 10건)
                 </h4>
                 {history.map((day) => {
@@ -407,7 +418,7 @@ export default function ProductionPage() {
                               className="flex-1 rounded-lg px-2 py-1 text-center"
                               style={{
                                 background: 'var(--surface)',
-                                border: `1px solid ${BUILDING_COLORS[b.building]}20`,
+                                borderLeft: `2px solid ${BUILDING_COLORS[b.building]}`,
                               }}
                             >
                               <span

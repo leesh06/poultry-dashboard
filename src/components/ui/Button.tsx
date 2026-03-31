@@ -23,11 +23,12 @@ const VARIANT_STYLES: Record<Variant, React.CSSProperties> = {
     background: 'var(--primary)',
     color: '#ffffff',
     border: 'none',
+    boxShadow: '0 1px 2px rgba(0,0,0,0.1), 0 2px 8px color-mix(in srgb, var(--primary) 25%, transparent)',
   },
   secondary: {
-    background: 'color-mix(in srgb, var(--primary) 10%, transparent)',
+    background: 'var(--surface-cool)',
     color: 'var(--primary)',
-    border: '1px solid color-mix(in srgb, var(--primary) 20%, transparent)',
+    border: '1px solid var(--border-color)',
   },
   ghost: {
     background: 'transparent',
@@ -38,6 +39,7 @@ const VARIANT_STYLES: Record<Variant, React.CSSProperties> = {
     background: 'var(--danger)',
     color: '#ffffff',
     border: 'none',
+    boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
   },
 }
 
@@ -55,15 +57,18 @@ export function Button({
   return (
     <button
       className={`
-        inline-flex items-center justify-center font-medium
+        inline-flex items-center justify-center font-semibold
         transition-all duration-200
         disabled:opacity-50 disabled:cursor-not-allowed
         active:scale-[0.97]
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
         ${SIZE_CLASSES[size]}
         ${className}
       `}
       style={{
         ...VARIANT_STYLES[variant],
+        // @ts-expect-error CSS custom property for focus ring
+        '--tw-ring-color': 'var(--primary)',
         ...style,
       }}
       disabled={disabled || loading}

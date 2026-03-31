@@ -1,20 +1,36 @@
+type CardVariant = 'base' | 'elevated' | 'inset'
+
 interface CardProps {
   children: React.ReactNode
   className?: string
   hover?: boolean
-  padding?: 'sm' | 'md' | 'lg'
+  padding?: 'none' | 'sm' | 'md' | 'lg'
+  variant?: CardVariant
 }
 
 const PADDING = {
+  none: '',
   sm: 'p-3 sm:p-4',
   md: 'p-4 sm:p-5',
   lg: 'p-5 sm:p-6',
 }
 
-export function Card({ children, className = '', hover = false, padding = 'md' }: CardProps) {
+const VARIANT_CLASS: Record<CardVariant, string> = {
+  base: 'card-base',
+  elevated: 'card-elevated',
+  inset: 'card-inset',
+}
+
+export function Card({
+  children,
+  className = '',
+  hover = false,
+  padding = 'md',
+  variant = 'base',
+}: CardProps) {
   return (
     <div
-      className={`glass-card ${PADDING[padding]} ${hover ? 'cursor-pointer' : ''} ${className}`}
+      className={`${VARIANT_CLASS[variant]} ${PADDING[padding]} ${hover ? 'cursor-pointer hover:-translate-y-0.5 transition-transform duration-200' : ''} ${className}`}
     >
       {children}
     </div>
@@ -37,7 +53,7 @@ export function CardHeader({ icon, title, value, subtitle, color }: CardHeaderPr
           <div
             className="flex h-9 w-9 items-center justify-center rounded-xl"
             style={{
-              background: `color-mix(in srgb, ${color || 'var(--primary)'} 12%, transparent)`,
+              background: 'var(--surface-alt)',
               color: color || 'var(--primary)',
             }}
           >
@@ -45,7 +61,7 @@ export function CardHeader({ icon, title, value, subtitle, color }: CardHeaderPr
           </div>
         )}
         <div>
-          <p className="text-xs font-medium" style={{ color: 'var(--muted)' }}>
+          <p className="text-label">
             {title}
           </p>
           {subtitle && (

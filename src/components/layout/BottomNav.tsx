@@ -15,14 +15,11 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50">
-      {/* Frosted glass background */}
       <div
-        className="mx-auto max-w-screen-lg border-t"
+        className="mx-auto max-w-screen-lg"
         style={{
-          background: 'color-mix(in srgb, var(--surface) 80%, transparent)',
-          backdropFilter: 'blur(20px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-          borderColor: 'color-mix(in srgb, var(--border-color) 60%, transparent)',
+          background: 'var(--surface)',
+          boxShadow: '0 -1px 0 var(--border-color), 0 -4px 12px rgba(0,0,0,0.04)',
         }}
       >
         <div
@@ -35,30 +32,35 @@ export function BottomNav() {
               <Link
                 key={href}
                 href={href}
-                className="flex flex-col items-center gap-0.5 py-2 transition-all duration-200"
+                className="flex flex-col items-center gap-0.5 py-2.5 transition-colors duration-200"
                 style={{
                   color: isActive ? 'var(--primary)' : 'var(--muted)',
                 }}
               >
                 <div
-                  className="relative flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300"
+                  className="relative flex h-9 w-10 items-center justify-center rounded-xl transition-all duration-200"
                   style={{
-                    background: isActive
-                      ? 'color-mix(in srgb, var(--primary) 12%, transparent)'
-                      : 'transparent',
-                    transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                    background: isActive ? 'var(--surface-cool)' : 'transparent',
                   }}
                 >
                   <Icon
-                    size={24}
-                    strokeWidth={isActive ? 2.5 : 1.8}
+                    size={22}
+                    strokeWidth={isActive ? 2.4 : 1.8}
                   />
                 </div>
+                {/* Active dot indicator */}
+                {isActive && (
+                  <div
+                    className="h-1 w-4 rounded-full animate-badge-pop"
+                    style={{ background: 'var(--primary)' }}
+                  />
+                )}
                 <span
                   className="text-xs font-medium tracking-tight transition-all duration-200"
                   style={{
-                    opacity: isActive ? 1 : 0.7,
+                    opacity: isActive ? 1 : 0.65,
                     fontWeight: isActive ? 700 : 500,
+                    letterSpacing: isActive ? '-0.01em' : '0',
                   }}
                 >
                   {label}

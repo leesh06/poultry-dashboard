@@ -115,7 +115,7 @@ function DiffBadge({ current, prev, size = 'md' }: { current: number; prev: numb
   const color = direction === 'up'
     ? 'var(--danger)'
     : direction === 'down'
-      ? '#4A90D9'
+      ? 'var(--info)'
       : 'var(--muted)'
 
   const isLg = size === 'lg'
@@ -126,10 +126,10 @@ function DiffBadge({ current, prev, size = 'md' }: { current: number; prev: numb
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 ${textClass} tabular-nums`}
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 ${textClass} tabular-nums animate-badge-pop`}
       style={{
         color,
-        background: `color-mix(in srgb, ${color} 10%, transparent)`,
+        background: 'var(--surface-alt)',
       }}
     >
       {direction === 'up' && <TrendingUp size={iconSize} />}
@@ -242,8 +242,8 @@ export default function DashboardPage() {
           <div
             className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold tracking-wide uppercase"
             style={{
-              background: 'color-mix(in srgb, var(--primary) 12%, transparent)',
-              color: 'var(--primary)',
+              background: data.isDemo && !loading ? 'var(--surface-alt)' : 'var(--surface-cool)',
+              color: data.isDemo && !loading ? 'var(--muted)' : 'var(--primary)',
             }}
           >
             <Activity size={11} />
@@ -252,109 +252,118 @@ export default function DashboardPage() {
         }
       />
 
-      <PageContainer className="space-y-4 pb-4">
+      <PageContainer className="pb-4">
         {/* Demo banner */}
         {data.isDemo && !loading && (
           <div
-            className="flex items-center gap-2 rounded-xl px-4 py-3 text-xs animate-fade-in"
+            className="flex items-center gap-3 py-3 mb-5 text-xs animate-fade-in"
             style={{
-              background: 'color-mix(in srgb, var(--warning) 10%, transparent)',
               color: 'var(--warning)',
-              border: '1px solid color-mix(in srgb, var(--warning) 20%, transparent)',
+              borderLeft: '3px solid var(--warning)',
+              paddingLeft: '12px',
             }}
           >
-            <AlertTriangle size={14} />
+            <AlertTriangle size={14} style={{ flexShrink: 0 }} />
             <span>데모 데이터입니다. Google Sheets 연동 시 실제 시세가 표시됩니다.</span>
           </div>
         )}
 
         {/* ═══ 육계 시세 — 히어로 카드 ═══ */}
-        <Card className="animate-fade-in-up stagger-1 !p-0 overflow-hidden" padding="sm">
-          {/* 카드 헤더 띠 */}
-          <div
-            className="px-4 py-3 flex items-center justify-between"
-            style={{
-              background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
-            }}
-          >
-            <span className="text-base font-bold tracking-wider text-white/90 uppercase">
-              육계 생계시세
-            </span>
-            {latestPrice && (
-              <span className="text-sm font-medium text-white/60">
-                {latestPrice.date} 기준
-              </span>
-            )}
-          </div>
+        <Card variant="elevated" padding="none" className="animate-card-enter stagger-1 overflow-hidden">
+          {/* 상단 색상 바 */}
+          <div className="h-1" style={{ background: 'var(--primary)' }} />
 
-          {/* 육계 3종 대형 표시 */}
-          <div className="px-3 py-5 sm:px-5 sm:py-6">
-            <div className="grid grid-cols-3 gap-2">
-              {HERO_ITEMS.map(({ key, label }) => {
-                const value = latestPrice?.[key] ?? 0
-                const prev = prevPrice?.[key] ?? value
-                return (
-                  <div key={key} className="text-center">
-                    <div className="flex items-center justify-center gap-1.5 mb-2.5">
-                      <div
-                        className="h-3.5 w-3.5 rounded-full"
-                        style={{ background: PRICE_COLORS[key] }}
-                      />
-                      <span className="text-base font-bold" style={{ color: 'var(--muted)' }}>
-                        {label}
-                      </span>
+          <div className="px-4 pt-4 pb-1 sm:px-6 sm:pt-5">
+            <div className="flex items-center justify-between mb-5">
+              <span className="text-label" style={{ color: 'var(--primary)' }}>
+                육계 생계시세
+              </span>
+              {latestPrice && (
+                <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>
+                  {latestPrice.date} 기준
+                </span>
+              )}
+            </div>
+
+            {/* 육계 3종 — 대형 비대칭 표시 */}
+            <div className="flex flex-col gap-4 pb-5">
+              {/* 육계(대) — 크게 */}
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="h-3 w-3 rounded-full" style={{ background: PRICE_COLORS.broilerLarge }} />
+                  <span className="text-sm font-semibold" style={{ color: 'var(--muted)' }}>
+                    {HERO_ITEMS[0].label}
+                  </span>
+                </div>
+                <div className="flex items-end gap-3">
+                  <p className="text-metric animate-number-reveal">
+                    {formatNumber(latestPrice?.broilerLarge ?? 0)}
+                  </p>
+                  <span className="text-sm font-medium mb-1.5" style={{ color: 'var(--muted)' }}>원/kg</span>
+                  {latestPrice && prevPrice && (
+                    <div className="mb-1">
+                      <DiffBadge current={latestPrice.broilerLarge} prev={prevPrice.broilerLarge} size="lg" />
                     </div>
-                    <p
-                      className="text-3xl font-extrabold tabular-nums leading-none sm:text-4xl"
-                      style={{ color: 'var(--foreground)' }}
-                    >
-                      {formatNumber(value)}
-                    </p>
-                    <p className="text-sm mt-1.5 mb-2.5 font-semibold" style={{ color: 'var(--muted)' }}>
-                      원/kg
-                    </p>
-                    <DiffBadge current={value} prev={prev} />
-                  </div>
-                )
-              })}
+                  )}
+                </div>
+              </div>
+
+              {/* 육계(중) + 육계(소) — 인셋 카드 안에 나란히 */}
+              <div
+                className="grid grid-cols-2 gap-3 rounded-2xl p-4"
+                style={{ background: 'var(--surface-alt)' }}
+              >
+                {HERO_ITEMS.slice(1).map(({ key, label }) => {
+                  const value = latestPrice?.[key] ?? 0
+                  const prev = prevPrice?.[key] ?? value
+                  return (
+                    <div key={key}>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <div className="h-2.5 w-2.5 rounded-full" style={{ background: PRICE_COLORS[key] }} />
+                        <span className="text-xs font-semibold" style={{ color: 'var(--muted)' }}>
+                          {label}
+                        </span>
+                      </div>
+                      <p className="text-metric-md animate-number-reveal">
+                        {formatNumber(value)}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs" style={{ color: 'var(--muted)' }}>원/kg</span>
+                        <DiffBadge current={value} prev={prev} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
         </Card>
 
         {/* ═══ 병아리 + 종계노계 카드 ═══ */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 mt-5">
           {SUB_ITEMS.map(({ key, label }, i) => {
             const value = latestPrice?.[key] ?? 0
             const prev = prevPrice?.[key] ?? value
             return (
               <Card
                 key={key}
-                className={`animate-fade-in-up stagger-${i + 2}`}
+                variant="elevated"
+                className={`animate-card-enter stagger-${i + 2}`}
                 padding="lg"
               >
-                <div className="flex items-center gap-2.5 mb-3">
+                <div className="flex items-center gap-2 mb-3">
                   <div
-                    className="h-10 w-10 rounded-xl flex items-center justify-center"
-                    style={{
-                      background: `color-mix(in srgb, ${PRICE_COLORS[key]} 14%, transparent)`,
-                    }}
-                  >
-                    <div
-                      className="h-4 w-4 rounded-full"
-                      style={{ background: PRICE_COLORS[key] }}
-                    />
-                  </div>
-                  <span className="text-base font-bold" style={{ color: 'var(--muted)' }}>
+                    className="h-3.5 w-3.5 rounded-full"
+                    style={{ background: PRICE_COLORS[key] }}
+                  />
+                  <span className="text-label" style={{ color: 'var(--muted)' }}>
                     {label}
                   </span>
                 </div>
-                <p
-                  className="text-4xl font-extrabold tabular-nums leading-none sm:text-5xl"
-                  style={{ color: 'var(--foreground)' }}
-                >
+                <p className="text-metric-md animate-number-reveal">
                   {formatNumber(value)}
                 </p>
-                <p className="text-sm mt-1.5 mb-3 font-semibold" style={{ color: 'var(--muted)' }}>
+                <p className="text-xs mt-1 mb-3 font-medium" style={{ color: 'var(--muted)' }}>
                   {PRICE_UNITS[key]}
                 </p>
                 <DiffBadge current={value} prev={prev} size="lg" />
@@ -364,24 +373,24 @@ export default function DashboardPage() {
         </div>
 
         {/* ═══ 육계 시세 추이 차트 ═══ */}
-        <Card className="animate-fade-in-up stagger-3" padding="lg">
+        <Card variant="base" className="animate-card-enter stagger-3 mt-8" padding="lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
+              <h3 className="text-section">
                 육계 시세 추이
               </h3>
-              <p className="text-sm mt-0.5" style={{ color: 'var(--muted)' }}>최근 15일 (원/kg)</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>최근 15일 (원/kg)</p>
             </div>
             <div className="flex flex-wrap gap-3">
               {HERO_ITEMS.map(({ key, label }) => (
-                <div key={key} className="flex items-center gap-1.5 text-sm">
-                  <div className="h-3 w-3 rounded-full" style={{ background: PRICE_COLORS[key] }} />
+                <div key={key} className="flex items-center gap-1.5 text-xs">
+                  <div className="h-2.5 w-2.5 rounded-full" style={{ background: PRICE_COLORS[key] }} />
                   <span className="font-medium" style={{ color: 'var(--muted)' }}>{label.replace('육계', '')}</span>
                 </div>
               ))}
             </div>
           </div>
-          <div className="h-52 sm:h-64">
+          <div className="h-52 sm:h-64 animate-wipe-in">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data.prices} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
                 <defs>
@@ -415,24 +424,24 @@ export default function DashboardPage() {
         </Card>
 
         {/* ═══ 병아리 + 종계노계 시세 추이 차트 ═══ */}
-        <Card className="animate-fade-in-up stagger-4" padding="lg">
+        <Card variant="base" className="animate-card-enter stagger-4 mt-4" padding="lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
+              <h3 className="text-section">
                 병아리 · 종계노계 추이
               </h3>
-              <p className="text-sm mt-0.5" style={{ color: 'var(--muted)' }}>최근 15일</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>최근 15일</p>
             </div>
             <div className="flex flex-wrap gap-3">
               {SUB_ITEMS.map(({ key, label }) => (
-                <div key={key} className="flex items-center gap-1.5 text-sm">
-                  <div className="h-3 w-3 rounded-full" style={{ background: PRICE_COLORS[key] }} />
+                <div key={key} className="flex items-center gap-1.5 text-xs">
+                  <div className="h-2.5 w-2.5 rounded-full" style={{ background: PRICE_COLORS[key] }} />
                   <span className="font-medium" style={{ color: 'var(--muted)' }}>{label}</span>
                 </div>
               ))}
             </div>
           </div>
-          <div className="h-48 sm:h-56">
+          <div className="h-48 sm:h-56 animate-wipe-in">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.prices} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -457,27 +466,28 @@ export default function DashboardPage() {
         </Card>
 
         {/* ═══ 종계입식현황 차트 ═══ */}
-        <Card className="animate-fade-in-up stagger-5" padding="lg">
+        <Card variant="base" className="animate-card-enter stagger-5 mt-4" padding="lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>
+              <h3 className="text-section">
                 종계입식현황
               </h3>
-              <p className="text-sm mt-0.5" style={{ color: 'var(--muted)' }}>최근 5년 비교 (천수)</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>최근 5년 비교 (천수)</p>
             </div>
-            <div className="flex items-center gap-1">
-              <BarChart3 size={18} style={{ color: 'var(--muted)' }} />
-            </div>
+            <BarChart3 size={18} style={{ color: 'var(--muted)' }} />
           </div>
           <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1">
             {data.statYears.map((year, i) => (
-              <div key={year} className="flex items-center gap-1.5 text-sm">
-                <div className="h-3 w-3 rounded-full" style={{ background: STAT_COLORS[i] }} />
+              <div key={year} className="flex items-center gap-1.5 text-xs">
+                <div
+                  className="h-[3px] w-4 rounded-full"
+                  style={{ background: STAT_COLORS[i] }}
+                />
                 <span className="font-medium" style={{ color: 'var(--muted)' }}>{year}</span>
               </div>
             ))}
           </div>
-          <div className="h-52 sm:h-64">
+          <div className="h-52 sm:h-64 animate-wipe-in">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.statistics} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -491,9 +501,10 @@ export default function DashboardPage() {
                     dataKey={year}
                     name={year + '년'}
                     stroke={STAT_COLORS[i]}
-                    strokeWidth={year === data.statYears[0] ? 2.5 : 1.5}
-                    dot={{ r: year === data.statYears[0] ? 3 : 2, fill: STAT_COLORS[i], strokeWidth: 0 }}
-                    activeDot={{ r: 4 }}
+                    strokeWidth={year === data.statYears[0] ? 3 : 1.5}
+                    strokeOpacity={i === 0 ? 1 : 0.6}
+                    dot={{ r: year === data.statYears[0] ? 3.5 : 2, fill: STAT_COLORS[i], strokeWidth: 0 }}
+                    activeDot={{ r: 5, strokeWidth: 2, stroke: '#fff' }}
                     connectNulls={false}
                   />
                 ))}
